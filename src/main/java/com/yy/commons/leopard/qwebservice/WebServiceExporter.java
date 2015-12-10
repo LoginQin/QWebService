@@ -1,5 +1,23 @@
 package com.yy.commons.leopard.qwebservice;
 
+import com.yy.commons.leopard.qwebservice.view.JsonView;
+import com.yy.commons.leopard.rpcimpl.HessianRPCResolver;
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.JavaType;
+import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.remoting.support.RemoteExporter;
+import org.springframework.util.StringUtils;
+import org.springframework.web.HttpRequestHandler;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.method.support.ModelAndViewContainer;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -10,29 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import jodd.util.StringUtil;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.JavaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.support.AopUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.remoting.support.RemoteExporter;
-import org.springframework.web.HttpRequestHandler;
-import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
-
-import com.yy.commons.leopard.qwebservice.view.JsonView;
-import com.yy.commons.leopard.rpcimpl.DuowanRPCResolver;
-import com.yy.commons.leopard.rpcimpl.HessianRPCResolver;
 
 /**
  * The QWebService Exporter
@@ -53,7 +48,7 @@ import com.yy.commons.leopard.rpcimpl.HessianRPCResolver;
  * 
  */
 public class WebServiceExporter extends RemoteExporter implements HttpRequestHandler, InitializingBean {
-	static final Logger logger = LoggerFactory.getLogger("WebServiceExporter");
+	static final Logger logger = Logger.getLogger(WebServiceExporter.class);
 	// 引用原项目的adapter以便获取统一信息
 	@Autowired
 	RequestMappingHandlerAdapter requestMappingHandlerAdapter;
@@ -94,7 +89,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 			if (method == null) {
 				throw new NoSuchMethodException("The Public WebService No This Method: " + methodName);
 			}
-			Object[] params = null;
+			Object[] params;
 			boolean isQWebClientProtol = request.getParameter("__qwebparam[0]") != null;
 			if (isQWebClientProtol) {
 				Type[] types = method.getGenericParameterTypes();
@@ -136,7 +131,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		this.isInterfaceMode = this.getServiceInterface() != null ? true : false;
+		this.isInterfaceMode = this.getServiceInterface() != null;
 		String ClassName = getSimpleClassName();
 		for (Method method : checkAndGetMethods()) {
 			if ((!Modifier.isPublic(method.getModifiers()))) {
@@ -166,7 +161,6 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 	protected void prepareRPCResolver() {
 		if (isInterfaceMode) {// if isInterface Mode
 			this.RPCResolvers.add(new HessianRPCResolver(this, requestMappingHandlerAdapter.getApplicationContext()));
-			this.RPCResolvers.add(new DuowanRPCResolver(this, requestMappingHandlerAdapter.getApplicationContext()));
 		}
 	}
 
@@ -176,8 +170,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 
 	/**
 	 * 获取Aop代理后实际的目标对象
-	 * 
-	 * @return
+	 *
 	 */
 	public Class<?> getActualClass() {
 		return AopUtils.getTargetClass(this.getService());
@@ -199,7 +192,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 	}
 
 	protected String getFirstMatchFromURL(String url, String REGX) {
-		if (StringUtil.isBlank(url)) {
+		if (StringUtils.isEmpty(url)) {
 			return null;
 		}
 		Pattern p = Pattern.compile(REGX, Pattern.CASE_INSENSITIVE);

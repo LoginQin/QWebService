@@ -1,9 +1,6 @@
 package com.yy.commons.leopard.qwebservice;
 
-import java.lang.reflect.Method;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
@@ -15,6 +12,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolverCompo
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ServletRequestDataBinderFactory;
+
+import java.lang.reflect.Method;
 
 /**
  * 请求参数解析
@@ -30,7 +29,7 @@ public class RequestParamsParser extends HandlerMethod {
 		this.dataBinderFactory = new ServletRequestDataBinderFactory(null, requestMappingHandlerAdapter.getWebBindingInitializer());
 	}
 
-	private final static Logger logger = LoggerFactory.getLogger(RequestParamsParser.class);
+	private final static Logger logger = Logger.getLogger(RequestParamsParser.class);
 
 	private HandlerMethodArgumentResolverComposite argumentResolvers;
 
@@ -42,12 +41,7 @@ public class RequestParamsParser extends HandlerMethod {
 
 	/**
 	 * 从请求解析出参数
-	 * 
-	 * @param request
-	 * @param mavContainer
-	 * @param providedArgs
-	 * @return
-	 * @throws Exception
+	 *
 	 */
 	public Object[] getMethodArgumentValues(NativeWebRequest request, ModelAndViewContainer mavContainer, Object... providedArgs) throws Exception {
 
@@ -97,7 +91,8 @@ public class RequestParamsParser extends HandlerMethod {
 	 *            error message to append the HandlerMethod details to
 	 */
 	protected String getDetailedErrorMessage(String message) {
-		StringBuilder sb = new StringBuilder(message).append("\n");
+		StringBuilder sb;
+		sb = new StringBuilder(message).append("\n");
 		sb.append("HandlerMethod details: \n");
 		sb.append("Controller [").append(getBeanType().getName()).append("]\n");
 		sb.append("Method [").append(getBridgedMethod().toGenericString()).append("]\n");
