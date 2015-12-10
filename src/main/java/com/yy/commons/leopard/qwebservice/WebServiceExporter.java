@@ -30,7 +30,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
-import com.duowan.leopard.web.mvc.JsonView;
+import com.yy.commons.leopard.qwebservice.view.JsonView;
 import com.yy.commons.leopard.rpcimpl.DuowanRPCResolver;
 import com.yy.commons.leopard.rpcimpl.HessianRPCResolver;
 
@@ -144,7 +144,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 			}
 			String name = method.getName();
 			if (methodMaps.containsKey(name)) {
-				throw new RuntimeException("Method:" + name + ", has been mapping to url. There may be a method with the same name.");
+                throw new RuntimeException("Method:" + name + ", has been mapping to url. There may be a method with the same name.");
 			}
 			methodMaps.put(name, method);
 			Method methodImpl = getImplMethod(method);
