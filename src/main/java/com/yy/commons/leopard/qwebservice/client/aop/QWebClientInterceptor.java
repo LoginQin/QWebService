@@ -5,32 +5,31 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.remoting.support.UrlBasedRemoteAccessor;
 
-import com.duowan.leopard.commons.utility.HttpUtils;
-import com.duowan.leopard.json.Json;
+import com.github.kevinsawicki.http.HttpRequest;
 import com.yy.commons.leopard.qwebservice.serializ.InvokeResultDeserializer;
+import com.yy.commons.leopard.qwebservice.utils.QWebViewUtils;
 
 public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements MethodInterceptor {
-	static ObjectMapper mapper = new ObjectMapper();
+
 
 	static InvokeResultDeserializer invokeResultDeserializer = new InvokeResultDeserializer();
+
 	long readTimeout = -1;
 
 	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable {
-		// System.out.println(Json.toJson(invocation.getArguments()));
-		// System.out.println(invocation.getMethod().getGenericReturnType());
-		// HttpUtils.doPost(url, params, timeout * 1000, timeout * 1000);
 		Object arg[] = invocation.getArguments();
 		Map<String, String> param = new HashMap<String, String>();
+
 		if (arg != null) {
 			for (int i = 0; i < arg.length; i++) {
-				param.put("__qwebparam[" + i + "]", Json.toJson(arg[i]));
+                param.put("__qwebparam[" + i + "]", QWebViewUtils.toJson(arg[i]));
 			}
 		}
-		String resultStr = HttpUtils.doPost(this.getMethodURL(invocation.getMethod().getName()), param, this.getReadTimeout(), this.getReadTimeout());
+
+        String resultStr = HttpRequest.post(this.getMethodURL(invocation.getMethod().getName())).form(param).body();
 		return invokeResultDeserializer.deserializ(resultStr, invocation.getMethod().getGenericReturnType());
 	}
 

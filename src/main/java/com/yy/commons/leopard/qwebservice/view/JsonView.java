@@ -6,9 +6,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.springframework.util.StringUtils;
 
-import com.duowan.leopard.web.mvc.JsonpUtil;
 import com.yy.commons.leopard.qwebservice.utils.JsonpUtils;
 import com.yy.commons.leopard.qwebservice.utils.QWebViewUtils;
 
@@ -88,13 +87,13 @@ public class JsonView extends AbstractView {
     public String getBody(HttpServletRequest request, HttpServletResponse response) {
         {
             String callback = request.getParameter("callback");
-            if (StringUtils.isNotEmpty(callback)) {
+            if (!StringUtils.isEmpty(callback)) {
                 return this.toJsonp(callback);
             }
         }
         {
             String var = request.getParameter("var");
-            if (StringUtils.isNotEmpty(var)) {
+            if (!StringUtils.isEmpty(var)) {
                 return this.toScript(var);
             }
         }
@@ -131,7 +130,7 @@ public class JsonView extends AbstractView {
 
     protected String toScript(String var) {
         try {
-            JsonpUtil.checkVar(var);
+            JsonpUtils.checkVar(var);
             String json = this.toJson();
             return "var " + var + " = " + json + ";";
         } catch (Exception e) {

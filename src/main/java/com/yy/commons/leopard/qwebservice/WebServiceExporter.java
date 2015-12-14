@@ -1,10 +1,20 @@
 package com.yy.commons.leopard.qwebservice;
 
-import com.yy.commons.leopard.qwebservice.view.JsonView;
-import com.yy.commons.leopard.rpcimpl.HessianRPCResolver;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.JavaType;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,18 +26,9 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.yy.commons.leopard.qwebservice.utils.JsonUtils;
+import com.yy.commons.leopard.qwebservice.view.JsonView;
+import com.yy.commons.leopard.rpcimpl.HessianRPCResolver;
 
 /**
  * The QWebService Exporter
@@ -68,8 +69,6 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 	// RPC解决者
 	List<AbstractRPCResolver> RPCResolvers = new ArrayList<AbstractRPCResolver>();
 
-	static ObjectMapper mapper = new ObjectMapper();
-
 	// private PathMatcher pathMatcher = new AntPathMatcher();
 
 	public void handleRequest(HttpServletRequest request, HttpServletResponse response) {
@@ -95,8 +94,8 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 				Type[] types = method.getGenericParameterTypes();
 				params = new Object[types.length];
 				for (int i = 0; i < types.length; i++) {
-					String param = request.getParameter("__rpcparam[" + i + "]");
-					params[i] = mapper.readValue(param, getJavaType(types[i]));
+                    String param = request.getParameter("__qwebparam[" + i + "]");
+                    params[i] = JsonUtils.toObject(param, types[i]);
 				}
 			} else {
 				// 普通controller 模式.
@@ -105,6 +104,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 				RequestParamsParser parser = new RequestParamsParser(this.getService(), implMethodMaps.get(methodName), requestMappingHandlerAdapter);
 				params = parser.getMethodArgumentValues(webRequest, mavContainer, null);
 			}
+
 			view.setData(method.invoke(this.getService(), params));
 			view.setStatus(200);
 			viewx.render(view.getModel(), request, response);
@@ -149,12 +149,6 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 			System.err.println("QWebService Method: " + ClassName + "." + name);
 		}
 		prepareRPCResolver();
-	}
-
-	JavaType getJavaType(Type type) {
-		JavaType resultType;
-		resultType = mapper.constructType(type);
-		return resultType;
 	}
 
 	// add the RPC resolver..

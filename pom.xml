@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.yy.leopard.commons</groupId>
@@ -10,8 +9,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.version>3.2.1.RELEASE</spring.version>
+		<spring.version>3.2.2.RELEASE</spring.version>
 		<jackson.version>1.9.13</jackson.version>
+		<jodd.version>3.4.4</jodd.version>
 	</properties>
 
 	<dependencies>
@@ -38,6 +38,13 @@
 			<artifactId>servlet-api</artifactId>
 			<version>2.5</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.github.kevinsawicki</groupId>
+			<artifactId>http-request</artifactId>
+			<version>6.0</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>javax.servlet.jsp</groupId>
