@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!-- 	<bean name="resourceExporter" class="org.springframework.remoting.caucho.HessianServiceExporter">
+		<property name="service">
+			<ref bean="resourceWebService" />
+		</property>
+		<property name="serviceInterface">
+			<value>com.duowan.kkdict.webservice.api.ResourceWebService</value>
+		</property>
+	</bean>
+
+	<bean name="cizuExporter" class="org.springframework.remoting.caucho.HessianServiceExporter">
+		<property name="service">
+			<ref bean="cizuWebService" />
+		</property>
+		<property name="serviceInterface">
+			<value>com.duowan.kkdict.web.api.CizuWebService</value>
+		</property>
+	</bean>
+
+	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<props>
+				<prop key="/rpc/resource">resourceExporter</prop>
+				<prop key="/rpc/cizu">cizuExporter</prop>
+			</props>
+		</property>
+	</bean> -->
+	
+	<bean class="com.yy.commons.leopard.qwebservice.QWebAnnotationRegister"></bean>
+
+	<!-- <bean name="notfoundreviewDaoExporter" class="com.yy.commons.leopard.qwebservice.WebServiceExporter"> <property name="service"> <ref bean="notfoundreviewDaoMysqlImpl" /> </property> <property name="serviceInterface"> 
+		<value>com.duowan.kkdict.dao.NotfoundreviewDao</value> </property> </bean> <bean id="urlMapping2" class="com.yy.commons.leopard.qwebservice.WebServiceUrlHandlerMapping"> <property name="mappings"> <props> 
+		<prop key="/admin/notfoundreview/">notfoundreviewDaoExporter</prop> </props> </property> </bean> -->
+
+</beans>

@@ -1,5 +1,6 @@
 package com.yy.commons.leopard.qwebservice.exception;
 
+
 public class RPCInvokeException extends Exception {
 
 	/**
