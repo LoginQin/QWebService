@@ -6,7 +6,7 @@ QWebService 是一个快速发布WebService的工具库, 目标是让开发WebSe
 
 你可以只声明一个Java类, 利用QWebService可以很快的将整个类的公用方法变成一个可以提供HTTP接口的WebService服务.
 
-可以利用 DuowanRPC 的客户端, 或者HessianRPC的客户端, 甚至直接用HTTP-GET请求构造请求路径来访问(就像发布的Controller)
+可以利用QWebService-Java客户端, 或者HessianRPC的客户端, 甚至直接用HTTP-GET请求构造请求路径来访问(就像发布的Controller)
 
 
 ## 服务端 applicationContent.xml 配置
@@ -29,7 +29,7 @@ QWebService支持注解发布, 和使用XML配置的方式发布.
 
 ```
 
-####在代码中使用`@QWebService`来加入注解
+####在代码中使用`@QWebService`注解来标注QWebService
 
 下面的方法前提是**需要让Spring框架扫描到你的这个类**自动装配Bean, @QWebService本质也是一个@Component, 所以你可以在项目的任何地方采用
 依赖注入的方式调用这个类.
@@ -97,7 +97,17 @@ public class MyTestAPI implements MyService, otherInterface{
     </property>
 </bean>
 ```
-
+##QWeb客户端RPC访问
+```
+<bean id="cizuWebServiceRemote" class="cn.duapi.qweb.client.QWebProxyFactoryBean">
+	<property name="serviceUrl">
+        <value>http://youdomain.com/rpc/resource</value>
+	</property>
+	<property name="serviceInterface">
+		<value>com.duowan.kkdict.webservice.api.ResourceWebService</value>
+	</property>
+</bean>
+```
 
 
 
@@ -115,7 +125,8 @@ public class MyTestAPI implements MyService, otherInterface{
 </bean>
 ```
 
-##DuowanRPC -- 客户端访问
+## <s>DuowanRPC -- 客户端访问 </s>
+因为需要支持通用化, 已经废止支持duowanRPC方式
 #####applicationContent.xml配置
 ```xml
 <bean id="cizuWebServiceRemote" class="com.duowan.common.rpc.client.RPCProxyFactoryBean">
@@ -129,7 +140,7 @@ public class MyTestAPI implements MyService, otherInterface{
 </bean>
 ```
 
-##JS客户端访问
+##浏览器客户端访问
 直接把接口当成是一个HTTP接口, 用 `[方法名].do` 的方式调用Java的公共方法, 并按照URL参数协议传递参数即可
 比如发布的class有一个公共方法`list`, 直接利用`list.do` 调用
 #####直接调用
@@ -197,6 +208,20 @@ public class MyTestAPI implements QWebViewHandler {
     }
 }
 ```
+
+##关于
+作者: qinwei
+
+email: qinwei081@gmail.com   
+
+email2: qinwei081@foxmail.com
+
+ChineseTiger
+
+##Licence
+
+MIT
+
 
 </pre>
 
