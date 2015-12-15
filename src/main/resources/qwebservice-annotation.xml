@@ -29,7 +29,7 @@
 		</property>
 	</bean> -->
 	
-	<bean class="com.yy.commons.leopard.qwebservice.QWebAnnotationRegister"></bean>
+	<bean class="cn.duapi.qweb.QWebAnnotationRegister"></bean>
 
 	<!-- <bean name="notfoundreviewDaoExporter" class="com.yy.commons.leopard.qwebservice.WebServiceExporter"> <property name="service"> <ref bean="notfoundreviewDaoMysqlImpl" /> </property> <property name="serviceInterface"> 
 		<value>com.duowan.kkdict.dao.NotfoundreviewDao</value> </property> </bean> <bean id="urlMapping2" class="com.yy.commons.leopard.qwebservice.WebServiceUrlHandlerMapping"> <property name="mappings"> <props> 

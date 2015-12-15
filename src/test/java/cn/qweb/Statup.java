@@ -7,8 +7,8 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import com.yy.commons.leopard.qwebservice.WebServiceExporter;
-import com.yy.commons.leopard.qwebservice.WebServiceUrlHandlerMapping;
+import cn.duapi.qweb.WebServiceExporter;
+import cn.duapi.qweb.WebServiceUrlHandlerMapping;
 
 public class Statup {
 
