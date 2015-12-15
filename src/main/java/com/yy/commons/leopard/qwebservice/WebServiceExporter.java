@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +24,11 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 import com.yy.commons.leopard.qwebservice.utils.JsonUtils;
-import com.yy.commons.leopard.qwebservice.view.JsonView;
+import com.yy.commons.leopard.qwebservice.view.JsonViewRender;
 import com.yy.commons.leopard.rpcimpl.HessianRPCResolver;
 
 /**
@@ -49,7 +50,8 @@ import com.yy.commons.leopard.rpcimpl.HessianRPCResolver;
  * 
  */
 public class WebServiceExporter extends RemoteExporter implements HttpRequestHandler, InitializingBean {
-	static final Logger logger = Logger.getLogger(WebServiceExporter.class);
+
+    static final Logger logger = Logger.getLogger(WebServiceExporter.class);
 	// 引用原项目的adapter以便获取统一信息
 	@Autowired
 	RequestMappingHandlerAdapter requestMappingHandlerAdapter;
@@ -75,8 +77,12 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 		String methodName = getFirstMatchFromURL(request.getServletPath(), METHOD_URL_REGX);
 		String protolTypeName = getFirstMatchFromURL(request.getServletPath(), PROTOL_URL_REGX);
 		Method method = methodMaps.get(methodName);
-		JsonView view = new JsonView();
-		View viewx = view.getView();
+        QWebViewHandler viewRender = new JsonViewRender();
+
+        //if this public Service implement QWebViewHandler interfaces, instead default render
+        if (this.getService() instanceof QWebViewHandler) {
+            viewRender = ((QWebViewHandler) this.getService());
+        }
 
 		try {
 			for (AbstractRPCResolver resolver : RPCResolvers) {
@@ -85,14 +91,17 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 					return;
 				}
 			}
+
 			if (method == null) {
 				throw new NoSuchMethodException("The Public WebService No This Method: " + methodName);
 			}
+
 			Object[] params;
 			boolean isQWebClientProtol = request.getParameter("__qwebparam[0]") != null;
 			if (isQWebClientProtol) {
 				Type[] types = method.getGenericParameterTypes();
 				params = new Object[types.length];
+
 				for (int i = 0; i < types.length; i++) {
                     String param = request.getParameter("__qwebparam[" + i + "]");
                     params[i] = JsonUtils.toObject(param, types[i]);
@@ -105,24 +114,33 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 				params = parser.getMethodArgumentValues(webRequest, mavContainer, null);
 			}
 
-			view.setData(method.invoke(this.getService(), params));
-			view.setStatus(200);
-			viewx.render(view.getModel(), request, response);
+            Object invokeResult = method.invoke(this.getService(), params);
+
+            ModelAndView modelAndView;
+
+            if (invokeResult instanceof ModelAndView) {
+                //if method result is return ModelAndView , use to instead
+                modelAndView = (ModelAndView) invokeResult;
+            } else {
+                modelAndView = viewRender.getResultView(methodName, invokeResult);
+            }
+
+            modelAndView.getView().render(modelAndView.getModel(), request, response);
+
 		} catch (InvocationTargetException e) {
-			view.setStatus(-500);
-			view.setMessage(e.getTargetException().getMessage());
+            ModelAndView exceptionView = viewRender.getExceptionView(methodName, e.getTargetException());
 			logger.error(e.getTargetException().getMessage(), e);
 			try {
-				viewx.render(view.getModel(), request, response);
+                exceptionView.getView().render(exceptionView.getModel(), request, response);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
+
 		} catch (Throwable e) {
-			view.setStatus(-500);
-			view.setMessage(e.getMessage());
-			logger.error(e.getMessage(), e);
+            ModelAndView exceptionView = viewRender.getExceptionView(methodName, e);
+            logger.error(e.getMessage(), e);
 			try {
-				viewx.render(view.getModel(), request, response);
+                exceptionView.getView().render(exceptionView.getModel(), request, response);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -133,8 +151,10 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 	public void afterPropertiesSet() throws Exception {
 		this.isInterfaceMode = this.getServiceInterface() != null;
 		String ClassName = getSimpleClassName();
+        List<Method> handleViewMethodList = Arrays.asList(QWebViewHandler.class.getDeclaredMethods());
 		for (Method method : checkAndGetMethods()) {
-			if ((!Modifier.isPublic(method.getModifiers()))) {
+            // ignore not public or implement QWebViewHandler method
+            if ((!Modifier.isPublic(method.getModifiers()) || handleViewMethodList.contains(method))) {
 				continue;
 			}
 			String name = method.getName();

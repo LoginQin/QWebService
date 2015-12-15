@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.lang.model.type.NullType;
+
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -11,12 +14,12 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.util.StringUtils;
 
 import com.yy.commons.leopard.qwebservice.annotation.QWebService;
-import com.yy.commons.leopard.qwebservice.utils.JsonUtils;
 
 public class QWebAnnotationRegister implements ApplicationContextAware, InitializingBean {
+
+    final static Logger logger = Logger.getLogger(QWebAnnotationRegister.class);
 
     ApplicationContext applicationContext;
 
@@ -27,7 +30,8 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        System.err.print("QwebStart....");
+
+        logger.info("QWebService Start Loading..");
 
         Map<String, Object> beans = applicationContext.getBeansWithAnnotation(QWebService.class);
 
@@ -43,31 +47,38 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
         BeanDefinitionBuilder handlerMappingDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(WebServiceUrlHandlerMapping.class);
 
         for (Entry<String, Object> bean : beans.entrySet()) {
+
             String beanName = bean.getKey();
+
             Object targetBean = bean.getValue();
+
             QWebService qwebAnn = targetBean.getClass().getAnnotation(QWebService.class);
             // 通过BeanDefinitionBuilder创建bean定义
             BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(WebServiceExporter.class);
-            // 设置属性userAcctDAO,此属性引用已经定义的bean:userAcctDAO
+
             beanDefinitionBuilder.addPropertyReference("service", beanName);
 
-            if (StringUtils.isEmpty(qwebAnn.api())) {
+            if (NullType.class.equals(qwebAnn.api())) {
+
                 Class<?>[] clazzs = targetBean.getClass().getInterfaces();
-                System.out.println(JsonUtils.toJson(clazzs));
+
                 if (clazzs != null && clazzs.length > 0) {
                     beanDefinitionBuilder.addPropertyValue("serviceInterface", targetBean.getClass().getInterfaces()[0].getName());
                 }
+
             } else {
+                // interface mode
                 beanDefinitionBuilder.addPropertyValue("serviceInterface", qwebAnn.api());
             }
 
             // 注册bean
             defaultListableBeanFactory.registerBeanDefinition(beanName + "Exporter", beanDefinitionBuilder.getRawBeanDefinition());
             pro.setProperty(qwebAnn.value(), beanName + "Exporter");
-            System.err.print("register-->" + beanName + "Exporter for URL " + qwebAnn.value());
+            logger.info("register-->" + beanName + "Exporter for URL=" + qwebAnn.value());
         }
 
         handlerMappingDefinitionBuilder.addPropertyValue("mappings", pro);
+
         defaultListableBeanFactory.registerBeanDefinition("qwebUrlMap", handlerMappingDefinitionBuilder.getRawBeanDefinition());
 
     }

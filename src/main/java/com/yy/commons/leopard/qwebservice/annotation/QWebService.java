@@ -6,6 +6,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.lang.model.type.NullType;
+
+import org.springframework.stereotype.Component;
+
 /**
  * 标注某个类方法开放WebService接口
  * 
@@ -14,11 +18,12 @@ import java.lang.annotation.Target;
  */
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
+@Component
 @Documented
 public @interface QWebService {
 
-    String value() default "";
+    String value();
 
-    String api() default "";
+    Class<?> api() default NullType.class;
 
 }
