@@ -31,6 +31,14 @@ public class JsonUtils {
 
     }
 
+    public static <T> T toObject(String content, Class<T> valueType) {
+        try {
+            return JSON_MAPPER.readValue(content, valueType);
+        } catch (Exception e) {
+            throw new JsonRuntimeException(e.getMessage(), e);
+        }
+    }
+
     public static Object toObject(String json, Type type) {
         try {
             return JSON_MAPPER.readValue(json, getJavaType(type));

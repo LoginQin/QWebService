@@ -7,7 +7,9 @@ import org.codehaus.jackson.Version;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.module.SimpleModule;
 import org.codehaus.jackson.type.JavaType;
+import org.springframework.util.StringUtils;
 
+import cn.duapi.qweb.exception.JsonRuntimeException;
 import cn.duapi.qweb.exception.RPCInvokeException;
 import cn.duapi.qweb.model.InvokeResult;
 import cn.duapi.qweb.utils.JsonUtils;
@@ -25,24 +27,27 @@ public class InvokeResultDeserializer {
 		mapper.registerModule(module);
 	}
 
-	public Object deserializ(String str, Type type) throws RPCInvokeException {
+    public Object deserializ(String str, Type type) throws JsonRuntimeException {
 		try {
-			Object result = mapper.readValue(str, InvokeResult.class);
+            Object result = JsonUtils.toObject(str, InvokeResult.class);
 			if (result instanceof RPCInvokeException) {
 				throw (RPCInvokeException) result;
 			}
+
             if (result instanceof String) {
-                return mapper.readValue((String) result, getJavaType(type));
+                return JsonUtils.toObject((String) result, type);
             }
             return result;
 		} catch (Exception e) {
-			throw new RPCInvokeException(e.getMessage());
+            throw new JsonRuntimeException("Unexpected REMOTE RETURN=>" + getLimitString(str), e);
 		}
-        //throw new RPCInvokeException("can't deserializ " + type.getClass());
 	}
 
-	JavaType getJavaType(Type type) {// cache result 性能并不明显.
-		return mapper.constructType(type);
-	}
+    String getLimitString(String str) {
+        if (StringUtils.isEmpty(str)) {
+            return "";
+        }
+        return str.length() > 20 ? str.substring(0, 20) : str;
+    }
 
 }
