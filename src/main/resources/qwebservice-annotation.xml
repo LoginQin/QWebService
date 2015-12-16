@@ -7,7 +7,7 @@
 			<ref bean="resourceWebService" />
 		</property>
 		<property name="serviceInterface">
-			<value>com.duowan.kkdict.webservice.api.ResourceWebService</value>
+			<value>com.duowan.webservice.api.ResourceWebService</value>
 		</property>
 	</bean>
 
@@ -16,7 +16,7 @@
 			<ref bean="cizuWebService" />
 		</property>
 		<property name="serviceInterface">
-			<value>com.duowan.kkdict.web.api.CizuWebService</value>
+			<value>com.duowan.web.api.CizuWebService</value>
 		</property>
 	</bean>
 
@@ -27,12 +27,28 @@
 				<prop key="/rpc/cizu">cizuExporter</prop>
 			</props>
 		</property>
-	</bean> -->
+	</bean> 
+-->
 	
 	<bean class="cn.duapi.qweb.QWebAnnotationRegister"></bean>
 
-	<!-- <bean name="notfoundreviewDaoExporter" class="com.yy.commons.leopard.qwebservice.WebServiceExporter"> <property name="service"> <ref bean="notfoundreviewDaoMysqlImpl" /> </property> <property name="serviceInterface"> 
-		<value>com.duowan.kkdict.dao.NotfoundreviewDao</value> </property> </bean> <bean id="urlMapping2" class="com.yy.commons.leopard.qwebservice.WebServiceUrlHandlerMapping"> <property name="mappings"> <props> 
-		<prop key="/admin/notfoundreview/">notfoundreviewDaoExporter</prop> </props> </property> </bean> -->
+	<!-- template
+	<bean name="testServiceExporter" class="cn.duapi.qweb.WebServiceExporter"> 
+			<property name="service"> 
+				<ref bean="myTestService" />
+		    </property> 
+		    <property name="serviceInterface"> 
+				<value>com.duowan.kkdict.dao.NotfoundreviewDao</value> 
+			</property> 
+		</bean> 
+		
+		<bean id="urlMapping2" class="cn.duapi.qweb.WebServiceUrlHandlerMapping"> 
+			<property name="mappings"> 
+				<props> 
+					<prop key="/admin/testService/">testServiceExporter</prop> 
+				</props> 
+			</property>
+	</bean>
+	 -->
 
 </beans>
