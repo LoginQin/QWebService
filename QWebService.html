@@ -8,6 +8,15 @@ QWebService 是一个快速发布WebService的工具库, 目标是让开发WebSe
 
 可以利用QWebService-Java客户端, 或者HessianRPC的客户端, 甚至直接用HTTP-GET请求构造请求路径来访问(就像发布的Controller)
 
+##Maven
+```xml
+<dependency>
+    <groupId>cn.duapi.qweb</groupId>
+    <artifactId>qwebservice</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+</dependency>
+
+```
 
 ## 服务端 applicationContent.xml 配置
 QWebService支持注解发布, 和使用XML配置的方式发布.
@@ -43,7 +52,7 @@ public class MyTestAPI {
         return false;
     }
     
-    public MyModel get() {
+    public MyModel get(int id) {
         return new MyModel();
     }
 }
@@ -66,7 +75,7 @@ public class MyTestAPI implements MyService, otherInterface{
     
 
     @Override
-    public MyModel get() {
+    public MyModel get(int id) {
         return new MyModel();
     }
 }
@@ -77,22 +86,22 @@ public class MyTestAPI implements MyService, otherInterface{
 
 ```html
 <!-- 将需要发布的接口用 WebServiceExporter 封装管理 -->
-<bean name="resourceExporter" class="com.yy.commons.leopard.qwebservice.WebServiceExporter">
+<bean name="resourceExporter" class="cn.duapi.qweb.WebServiceExporter">
     <property name="service">
         <ref bean="resourceWebService" />
     </property>
     <!-- 这个接口也可以不指定, 如果不指定接口, 将不采用接口模式, 而是类模式. -->
     <property name="serviceInterface">
-        <value>com.duowan.kkdict.webservice.api.ResourceWebService</value>
+        <value>com.mytest.api.ResourceWebService</value>
     </property>
 </bean>
 
 <!--将 resourceExporter 利用 WebServiceUrlHandlerMapping 跟路径URL映射 -->
-<bean id="urlMapping" class="com.yy.commons.leopard.qwebservice.WebServiceUrlHandlerMapping">
+<bean id="urlMapping" class="cn.duapi.qweb.WebServiceUrlHandlerMapping">
     <property name="mappings">
         <props>
             <!-- 这里可以配置多个 url map -->
-            <prop key="/rpc/resource">resourceExporter</prop>
+            <prop key="/rpc/mytest/">resourceExporter</prop>
         </props>
     </property>
 </bean>
@@ -101,10 +110,10 @@ public class MyTestAPI implements MyService, otherInterface{
 ```
 <bean id="cizuWebServiceRemote" class="cn.duapi.qweb.client.QWebProxyFactoryBean">
 	<property name="serviceUrl">
-        <value>http://youdomain.com/rpc/resource</value>
+        <value>http://youdomain.com/rpc/mytest/</value>
 	</property>
 	<property name="serviceInterface">
-		<value>com.duowan.kkdict.webservice.api.ResourceWebService</value>
+		<value>com.mytest.api.ResourceWebService</value>
 	</property>
 </bean>
 ```
@@ -117,10 +126,10 @@ public class MyTestAPI implements MyService, otherInterface{
 <bean id="cizuWebServiceRemote" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
 	<property name="serviceUrl">
         <!-- 需要指定[hessian-protol]来表明客户端采用Hessian协议访问 -->
-        <value>http://youdomain.com/rpc/resource/hessian-protol/</value>
+        <value>http://youdomain.com/rpc/mytest/hessian-protol/</value>
 	</property>
 	<property name="serviceInterface">
-		<value>com.duowan.kkdict.webservice.api.ResourceWebService</value>
+		<value>com.mytest.api.ResourceWebService</value>
 	</property>
 </bean>
 ```
@@ -132,10 +141,10 @@ public class MyTestAPI implements MyService, otherInterface{
 <bean id="cizuWebServiceRemote" class="com.duowan.common.rpc.client.RPCProxyFactoryBean">
 	<property name="serviceUrl">
         <!-- 需要指定[duowan-protol]来表明客户端采用duowan-rpc协议访问 -->
-        <value>http://youdomain.com/rpc/resource/duowan-protol/</value>
+        <value>http://youdomain.com/rpc/mytest/duowan-protol/</value>
 	</property>
 	<property name="serviceInterface">
-		<value>com.duowan.kkdict.webservice.api.ResourceWebService</value>
+		<value>com.mytest.api.ResourceWebService</value>
 	</property>
 </bean>
 ```
@@ -144,13 +153,13 @@ public class MyTestAPI implements MyService, otherInterface{
 直接把接口当成是一个HTTP接口, 用 `[方法名].do` 的方式调用Java的公共方法, 并按照URL参数协议传递参数即可
 比如发布的class有一个公共方法`list`, 直接利用`list.do` 调用
 #####直接调用
-> http://youdomain.com/rpc/resource/list.do?pageId=1
+> http://youdomain.com/rpc/mytest/list.do?pageId=1
 
 #####跨域访问,支持JSONP, 只需要传递callback
-> http://youdomain.com/rpc/resource/list.do?pageId=1&callback=cb
+> http://youdomain.com/rpc/mytest/list.do?pageId=1&callback=cb
 
 #####跨域访问,支持返回JS, 只需要传递val
-> http://youdomain.com/rpc/resource/list.do?pageId=1&val=d
+> http://youdomain.com/rpc/mytest/list.do?pageId=1&val=d
 
 
 ##自定义返回结果格式
@@ -210,15 +219,14 @@ public class MyTestAPI implements QWebViewHandler {
 ```
 
 ##关于
-作者: qinwei
+Author: Qin Wei ( ChineseTiger )
 
 email: qinwei081@gmail.com   
 
-email2: qinwei081@foxmail.com
+email: qinwei081@foxmail.com
 
-ChineseTiger
 
-##Licence
+###Licence
 
 MIT
 
