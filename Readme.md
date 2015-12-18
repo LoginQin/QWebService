@@ -1,5 +1,3 @@
-<meta charset="UTF-8" />
-<pre id="markpage" style="display:none;" data-highlight-theme="github">
 #QWebService 说明
 
 QWebService 是一个基于Spring框架快速发布WebService的工具库, 目标是让开发WebService接口变得简单.
@@ -7,6 +5,7 @@ QWebService 是一个基于Spring框架快速发布WebService的工具库, 目�
 你可以只声明一个Java类, 利用QWebService可以很快的将整个类的公用方法变成一个可以提供HTTP接口的WebService服务.
 
 可以利用QWebService-Java客户端, 或者HessianRPC的客户端, 甚至直接用HTTP-GET请求构造请求路径来访问(就像发布的Controller)
+
 
 ##Maven
 ```xml
@@ -240,7 +239,3 @@ email: qinwei081@foxmail.com
 
 MIT
 
-
-</pre>
-
-<script src="http://dwz.cn/markpage" type="text/javascript"></script>
