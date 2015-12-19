@@ -1,21 +1,9 @@
 package cn.duapi.qweb;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import cn.duapi.qweb.rpcimpl.HessianRPCResolver;
+import cn.duapi.qweb.utils.JsonUtils;
+import cn.duapi.qweb.view.JsonViewRender;
+import cn.duapi.qweb.view.TextView;
 import org.apache.log4j.Logger;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -28,10 +16,15 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
-import cn.duapi.qweb.rpcimpl.HessianRPCResolver;
-import cn.duapi.qweb.utils.JsonUtils;
-import cn.duapi.qweb.view.JsonViewRender;
-import cn.duapi.qweb.view.TextView;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The QWebService Exporter
@@ -53,9 +46,9 @@ import cn.duapi.qweb.view.TextView;
  */
 public class WebServiceExporter extends RemoteExporter implements HttpRequestHandler, InitializingBean {
 
-    static final Logger logger = Logger.getLogger(WebServiceExporter.class);
+    static final Logger          logger = Logger.getLogger(WebServiceExporter.class);
     // 引用原项目的adapter以便获取统一信息
-    @Autowired
+    @Autowired(required = false)
     RequestMappingHandlerAdapter requestMappingHandlerAdapter;
 
     // 接口方法
@@ -67,11 +60,11 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
     // 协议URL匹配模式
     private static final String PROTOL_URL_REGX = "/(\\w+-protol)/";
     // 方法匹配模式
-    static final String METHOD_URL_REGX = "/([^/]+)\\.do";
+    static final String         METHOD_URL_REGX = "/([^/]+)\\.do";
     // 接口模式
-    private boolean isInterfaceMode;
+    private boolean             isInterfaceMode;
     // RPC解决者
-    List<AbstractRPCResolver> RPCResolvers = new ArrayList<AbstractRPCResolver>();
+    List<AbstractRPCResolver>   RPCResolvers    = new ArrayList<AbstractRPCResolver>();
 
     // private PathMatcher pathMatcher = new AntPathMatcher();
 
