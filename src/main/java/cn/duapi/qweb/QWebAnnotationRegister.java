@@ -7,6 +7,7 @@ import java.util.Properties;
 import javax.lang.model.type.NullType;
 
 import org.apache.log4j.Logger;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -50,9 +51,10 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
 
             String beanName = bean.getKey();
 
-            Object targetBean = bean.getValue();
-
-            QWebService qwebAnn = targetBean.getClass().getAnnotation(QWebService.class);
+            Object targetBean = bean.getValue();// this bean maybe a proxy bean, so use AopUtils.getTargetClass
+            
+            QWebService qwebAnn =  AopUtils.getTargetClass(targetBean).getAnnotation(QWebService.class);
+            
             // 通过BeanDefinitionBuilder创建bean定义
             BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(WebServiceExporter.class);
 
