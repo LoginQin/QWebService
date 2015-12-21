@@ -15,6 +15,8 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.ClassUtils;
 
 import cn.duapi.qweb.annotation.QWebService;
 
@@ -52,9 +54,20 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
             String beanName = bean.getKey();
 
             Object targetBean = bean.getValue();// this bean maybe a proxy bean, so use AopUtils.getTargetClass
-            
-            QWebService qwebAnn =  AopUtils.getTargetClass(targetBean).getAnnotation(QWebService.class);
-            
+
+            Class<?> targetClazz = AopUtils.getTargetClass(targetBean);
+
+            if (ClassUtils.isCglibProxyClass(targetClazz)) {
+                // 被CGLIB代理的类,是动态代码, 映射不到参数名称, 忽略
+                String errorMsg = "!!!WARN The bean name=[" + beanName
+                        + "] is EnhanceByCGLIB, QWebService Can't Work OK! This Error will be ignore! You'd better choose a clean bean without any proxy to use QWebService";
+                logger.error(errorMsg);
+                System.err.println(errorMsg);
+                continue;
+            }
+
+            QWebService qwebAnn = AnnotationUtils.findAnnotation(targetClazz, QWebService.class);
+
             // 通过BeanDefinitionBuilder创建bean定义
             BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(WebServiceExporter.class);
 
@@ -75,8 +88,8 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
 
             // 注册bean
             defaultListableBeanFactory.registerBeanDefinition(beanName + "Exporter", beanDefinitionBuilder.getRawBeanDefinition());
-            pro.setProperty(qwebAnn.value(), beanName + "Exporter");
-            logger.info("register-->" + beanName + "Exporter for URL=" + qwebAnn.value());
+            pro.setProperty(qwebAnn.url(), beanName + "Exporter");
+            logger.info("register-->" + beanName + "Exporter for URL=" + qwebAnn.url());
         }
 
         handlerMappingDefinitionBuilder.addPropertyValue("mappings", pro);

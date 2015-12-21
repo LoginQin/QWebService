@@ -1,9 +1,21 @@
 package cn.duapi.qweb;
 
-import cn.duapi.qweb.rpcimpl.HessianRPCResolver;
-import cn.duapi.qweb.utils.JsonUtils;
-import cn.duapi.qweb.view.JsonViewRender;
-import cn.duapi.qweb.view.TextView;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.Logger;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -16,15 +28,10 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import cn.duapi.qweb.rpcimpl.HessianRPCResolver;
+import cn.duapi.qweb.utils.JsonUtils;
+import cn.duapi.qweb.view.JsonViewRender;
+import cn.duapi.qweb.view.TextView;
 
 /**
  * The QWebService Exporter
@@ -88,7 +95,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
             }
 
             if (method == null) {
-                throw new NoSuchMethodException("The Public WebService [" + this.getService().getClass().getSimpleName() + "] No This Method: " + methodName);
+                throw new NoSuchMethodException("The Public WebService [" + AopUtils.getTargetClass(this.getService()).getSimpleName() + "] No This Method: " + methodName);
             }
 
             Object[] params;
@@ -174,7 +181,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
             if (methodImpl != null) {
                 implMethodMaps.put(name, methodImpl);
             }
-            logger.info("QWebService Method: " + ClassName + "." + name);
+            logger.info("QWebService Method: " + ClassName + "." + methodImpl.getName() + JsonUtils.toJson(method.getParameterTypes()));
         }
         prepareRPCResolver();
     }
