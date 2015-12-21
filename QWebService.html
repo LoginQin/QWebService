@@ -1,5 +1,5 @@
 <meta charset="UTF-8" />
-<pre id="markpage" style="display:none;" data-highlight-theme="github">
+<textarea id="markpage" style="display:none;" data-highlight-theme="github">
 #QWebService 说明
 
 QWebService 是一个基于Spring框架快速发布WebService的工具库, 目标是让开发WebService接口变得简单.
@@ -65,7 +65,7 @@ QWebService支持注解发布, 和使用XML配置的方式发布.
 
 ####类模式
 ```java
-@QWebService("/rpc/mytest/")
+@QWebService(url = "/rpc/mytest/")
 public class MyTestAPI {
 
     public boolean test() {
@@ -79,12 +79,13 @@ public class MyTestAPI {
 ```
 
 ####接口模式
-在注解中使用`api=`指定要发布的接口`value=`来表明映射的路径
+在注解中使用`api=`指定要发布的接口`url=`来表明映射的路径, `value`指定beanName(@Compoment)
 
 ```java
 // value = 发布的URL映射地址
 // api = 指定发布的接口方法为MyService
-@QWebService(value="/rpc/mytest/", api=MyService.class)
+// value = 指定beanName 
+@QWebService(url="/rpc/mytest/", api=MyService.class)
 public class MyTestAPI implements MyService, otherInterface{
 
     // MyService 中定义了一个方法, 这个只会发布这个方法
@@ -195,7 +196,7 @@ public class MyTestAPI implements MyService, otherInterface{
 
 ###方法中直接返回ModelAndView对象, 覆盖默认的JsonView
 ```java
-@QWebService("/rpc/mytest/")
+@QWebService(url="/rpc/mytest/")
 public class MyTestAPI implements QWebViewHandler {
 
     public boolean test() {
@@ -211,7 +212,7 @@ public class MyTestAPI implements QWebViewHandler {
 ###当前类实现`QWebViewHandler`接口
 如果需要统一当前发布`QWebService`的所有公有方法体
 ```java
-@QWebService("/rpc/mytest/")
+@QWebService(url="/rpc/mytest/")
 public class MyTestAPI implements QWebViewHandler {
 
     public boolean test() {
@@ -251,6 +252,6 @@ email: qinwei081@foxmail.com
 MIT
 
 
-</pre>
+</textarea>
 
 <script src="http://cdnresource.duowan.com/kkdict/1/markpage.js" type="text/javascript"></script>

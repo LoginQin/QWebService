@@ -6,7 +6,6 @@ QWebService 是一个基于Spring框架快速发布WebService的工具库, 目�
 
 可以利用QWebService-Java客户端, 或者HessianRPC的客户端, 甚至直接用HTTP-GET请求构造请求路径来访问(就像发布的Controller)
 
-
 ##Maven
 ```xml
 <dependency>
@@ -64,7 +63,7 @@ QWebService支持注解发布, 和使用XML配置的方式发布.
 
 ####类模式
 ```java
-@QWebService("/rpc/mytest/")
+@QWebService(url = "/rpc/mytest/")
 public class MyTestAPI {
 
     public boolean test() {
@@ -78,12 +77,13 @@ public class MyTestAPI {
 ```
 
 ####接口模式
-在注解中使用`api=`指定要发布的接口`value=`来表明映射的路径
+在注解中使用`api=`指定要发布的接口`url=`来表明映射的路径, `value`指定beanName(@Compoment)
 
 ```java
 // value = 发布的URL映射地址
 // api = 指定发布的接口方法为MyService
-@QWebService(value="/rpc/mytest/", api=MyService.class)
+// value = 指定beanName 
+@QWebService(url="/rpc/mytest/", api=MyService.class)
 public class MyTestAPI implements MyService, otherInterface{
 
     // MyService 中定义了一个方法, 这个只会发布这个方法
@@ -194,7 +194,7 @@ public class MyTestAPI implements MyService, otherInterface{
 
 ###方法中直接返回ModelAndView对象, 覆盖默认的JsonView
 ```java
-@QWebService("/rpc/mytest/")
+@QWebService(url="/rpc/mytest/")
 public class MyTestAPI implements QWebViewHandler {
 
     public boolean test() {
@@ -210,7 +210,7 @@ public class MyTestAPI implements QWebViewHandler {
 ###当前类实现`QWebViewHandler`接口
 如果需要统一当前发布`QWebService`的所有公有方法体
 ```java
-@QWebService("/rpc/mytest/")
+@QWebService(url="/rpc/mytest/")
 public class MyTestAPI implements QWebViewHandler {
 
     public boolean test() {
@@ -248,4 +248,5 @@ email: qinwei081@foxmail.com
 ###Licence
 
 MIT
+
 
