@@ -4,7 +4,7 @@
 
 	<groupId>cn.duapi.qweb</groupId>
 	<artifactId>qwebservice</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<name>QWebService</name>
 	<description>快速发布WebService接口</description>
 
