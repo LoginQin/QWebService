@@ -26,6 +26,7 @@ public abstract class AbstractView extends ModelAndView {
             }
             response.setContentType(AbstractView.this.getContentType());
             response.setContentLength(body.getBytes().length);
+            response.setCharacterEncoding(getCharacterEncoding());
             // Flush byte array to servlet output stream.
 
             Writer out = response.getWriter();
@@ -42,6 +43,10 @@ public abstract class AbstractView extends ModelAndView {
         return 200;
     }
     public abstract String getContentType();
+
+    public String getCharacterEncoding() {
+        return "UTF-8";
+    }
 
     public abstract String getBody(HttpServletRequest request, HttpServletResponse response);
 
