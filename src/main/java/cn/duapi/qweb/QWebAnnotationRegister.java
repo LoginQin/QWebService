@@ -17,6 +17,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 import cn.duapi.qweb.annotation.QWebService;
 
@@ -73,19 +74,25 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
 
             beanDefinitionBuilder.addPropertyReference("service", beanName);
 
-            Class<?> firstImplementInterface = getFirstIntefacesByDefault(targetBean);
-
-            boolean isInterfaceMode = (firstImplementInterface != null);
-
+            String interfaceName = null;
             // interface mode
             if (!NullType.class.equals(qwebAnn.api())) {
                 //set by api value
-                beanDefinitionBuilder.addPropertyValue("serviceInterface", qwebAnn.api());
-            } else if (isInterfaceMode) {
+                interfaceName = qwebAnn.api().toString();
+            } else {
+                Class<?> firstImplementInterface = getFirstIntefacesByDefault(targetBean);
                 //get first interface default, not include  QWebViewHandler
-                beanDefinitionBuilder.addPropertyValue("serviceInterface", firstImplementInterface.getName());
+                interfaceName = firstImplementInterface != null ? firstImplementInterface.getName() : null;
             }
 
+            boolean isInterfaceMode = !StringUtils.isEmpty(interfaceName);
+
+            if (isInterfaceMode) {
+                beanDefinitionBuilder.addPropertyValue("serviceInterface", interfaceName);
+                logger.info(beanName + " is [interfaceMode] , public for interface =>" + interfaceName);
+            } else {
+                logger.info(beanName + " is [classMode]");
+            }
             // 注册bean
             defaultListableBeanFactory.registerBeanDefinition(beanName + "Exporter", beanDefinitionBuilder.getRawBeanDefinition());
             pro.setProperty(qwebAnn.url(), beanName + "Exporter");
@@ -101,8 +108,10 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
     protected Class<?> getFirstIntefacesByDefault(Object target) {
 
         for (Class<?> clazz : target.getClass().getInterfaces()) {
-            //ignore QWebViewHandler
-            if (clazz.equals(QWebViewHandler.class)) {
+            //ignore QWebViewHandler, org.springframework.aop.SpringProxy org.springframework.cglib....
+            // target bean maybe a proxy bean (by AOP or CGLIB) which will implement some spring aop intefaces
+            // if want to public spring interface , use "api={spring.interface}" instead in QWebService Annotation
+            if (clazz.equals(QWebViewHandler.class) || clazz.getName().startsWith("org.springframework")) {
                 continue;
             }
             return clazz;
