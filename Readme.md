@@ -11,7 +11,7 @@ QWebService 是一个基于Spring框架快速发布WebService的工具库, 目�
 <dependency>
     <groupId>cn.duapi.qweb</groupId>
     <artifactId>qwebservice</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.1</version>
 </dependency>
 
 ```
@@ -245,8 +245,8 @@ email: qinwei081@gmail.com
 email: qinwei081@foxmail.com
 
 
-###Licence
+###License
 
-MIT
+[The Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 
