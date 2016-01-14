@@ -21,6 +21,14 @@ import org.springframework.util.StringUtils;
 
 import cn.duapi.qweb.annotation.QWebService;
 
+/**
+ * QWebService Register
+ * <P>
+ * Scan all QWebService annotation
+ * 
+ * @author qinwei
+ * 
+ */
 public class QWebAnnotationRegister implements ApplicationContextAware, InitializingBean {
 
     final static Logger logger = Logger.getLogger(QWebAnnotationRegister.class);
@@ -78,11 +86,15 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
             // interface mode
             if (!NullType.class.equals(qwebAnn.api())) {
                 //set by api value
-                interfaceName = qwebAnn.api().toString();
+                interfaceName = qwebAnn.api().getName();
             } else {
                 Class<?> firstImplementInterface = getFirstIntefacesByDefault(targetBean);
                 //get first interface default, not include  QWebViewHandler
                 interfaceName = firstImplementInterface != null ? firstImplementInterface.getName() : null;
+            }
+
+            if (!StringUtils.isEmpty(qwebAnn.doc())) {
+                beanDefinitionBuilder.addPropertyValue("renderDocument", qwebAnn.doc());
             }
 
             boolean isInterfaceMode = !StringUtils.isEmpty(interfaceName);

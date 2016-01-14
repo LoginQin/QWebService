@@ -9,18 +9,24 @@ import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.JsonDeserializer;
 
 import cn.duapi.qweb.exception.RPCInvokeException;
+import cn.duapi.qweb.model.InvokeResult;
 
-public class MsgDeserializer extends JsonDeserializer {
-	@Override
-	public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+public class MsgDeserializer extends JsonDeserializer<InvokeResult> {
+
+    @Override
+    public InvokeResult deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		JsonNode node = jp.getCodec().readTree(jp);
 		Object data = null;
-		if (node.get("status").asInt() == 200) {
+        int status = node.get("status").asInt();
+        if (status == 200) {
             data = node.get("data").toString();
 		} else {
 			data = new RPCInvokeException(node.get("message").asText());
 		}
-		return data;
+        InvokeResult result = new InvokeResult();
+        result.setStatus(status);
+        result.setData(data);
+        return result;
 	}
 
 	// public static void main(String[] args) {

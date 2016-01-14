@@ -16,7 +16,7 @@ import cn.duapi.qweb.exception.RPCInvokeException;
  * 
  */
 public class QWebRPCResolver extends AbstractRPCResolver {
-	private static final String PROTOL = "duapi.qweb-protol";
+    private static final String PROTOL = "qweb-protol";
 
 	public QWebRPCResolver(RemoteExporter masterExporter, ApplicationContext content) {
 		super(masterExporter, content);

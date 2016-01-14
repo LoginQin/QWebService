@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.remoting.support.RemoteExporter;
 import org.springframework.util.StringUtils;
 import org.springframework.web.HttpRequestHandler;
@@ -28,9 +30,13 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
+import cn.duapi.qweb.annotation.QWebConfig;
+import cn.duapi.qweb.doc.QWebDocumentRender;
 import cn.duapi.qweb.rpcimpl.HessianRPCResolver;
 import cn.duapi.qweb.utils.JsonUtils;
+import cn.duapi.qweb.utils.RequestUtils;
 import cn.duapi.qweb.view.JsonViewRender;
+import cn.duapi.qweb.view.MarkpageView;
 import cn.duapi.qweb.view.TextView;
 
 /**
@@ -62,7 +68,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
     Map<String, Method> methodMaps = new HashMap<String, Method>();
 
     // 实际实现的方法体
-    Map<String, Method> implMethodMaps = new HashMap<String, Method>();
+    Map<String, Method> implMethodMaps = new TreeMap<String, Method>();
 
     // 协议URL匹配模式
     private static final String PROTOL_URL_REGX = "/(\\w+-protol)/";
@@ -72,6 +78,10 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
     private boolean             isInterfaceMode;
     // RPC解决者
     List<AbstractRPCResolver>   RPCResolvers    = new ArrayList<AbstractRPCResolver>();
+
+    private static Object[] EMPTY_ARGS = new Object[] {};
+
+    private String renderDocument;
 
     // private PathMatcher pathMatcher = new AntPathMatcher();
 
@@ -84,6 +94,18 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
         //if this public Service implement QWebViewHandler interfaces, instead default render
         if (this.getService() instanceof QWebViewHandler) {
             viewRender = ((QWebViewHandler) this.getService());
+        }
+
+        if (StringUtils.isEmpty(methodName) && this.isNeedToRenderDocument()) {
+
+            String document = QWebDocumentRender.generateSimpleAPIDocument(implMethodMaps, RequestUtils.getRequestContextUri(request), this.getRenderDocument());
+            MarkpageView view = new MarkpageView(document);
+            try {
+                view.getView().render(view.getModel(), request, response);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
         }
 
         try {
@@ -113,7 +135,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
                 ServletWebRequest webRequest = new ServletWebRequest(request, response);
                 ModelAndViewContainer mavContainer = new ModelAndViewContainer();
                 RequestParamsParser parser = new RequestParamsParser(this.getService(), implMethodMaps.get(methodName), requestMappingHandlerAdapter);
-                params = parser.getMethodArgumentValues(webRequest, mavContainer, null);
+                params = parser.getMethodArgumentValues(webRequest, mavContainer, EMPTY_ARGS);
             }
 
             Object invokeResult = method.invoke(this.getService(), params);
@@ -150,6 +172,10 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
 
     }
 
+    private boolean isNeedToRenderDocument() {
+        return !StringUtils.isEmpty(this.getRenderDocument());
+    }
+
     public void printError(Exception e, HttpServletRequest request, HttpServletResponse response) {
         e.printStackTrace();
         TextView view = new TextView(500, "ERROR");
@@ -167,23 +193,44 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
         String ClassName = getSimpleClassName();
         Set<String> handleViewMethodNames = toStringNameSet(QWebViewHandler.class.getDeclaredMethods());
         Method[] methods = checkAndGetMethods();
+
         for (Method method : methods) {
+
             // ignore not public or implement QWebViewHandler method
             if ((!Modifier.isPublic(method.getModifiers()) || handleViewMethodNames.contains(method.getName()))) {
                 continue;
             }
+
             String name = method.getName();
             if (methodMaps.containsKey(name)) {
                 throw new RuntimeException("Method:" + name + ", has been mapping to url. There may be a method with the same name.");
             }
+
             methodMaps.put(name, method);
             Method methodImpl = getImplMethod(method);
+
+            QWebConfig config = methodImpl.getAnnotation(QWebConfig.class);
+
+            if (config != null && config.ignore()) {
+                continue;
+            }
+
             if (methodImpl != null) {
                 implMethodMaps.put(name, methodImpl);
             }
-            logger.info("QWebService Method: " + ClassName + "." + methodImpl.getName() + JsonUtils.toJson(method.getParameterTypes()));
+
+            logger.info("QWebService Method: " + ClassName + "." + methodImpl.getName() + getSimpleParameterTypeString(method.getParameterTypes()));
         }
+
         prepareRPCResolver();
+    }
+
+    static String getSimpleParameterTypeString(Class<?>[] clazzs) {
+        List<String> data = new ArrayList<String>();
+        for (Class<?> clazz : clazzs) {
+            data.add(clazz.getSimpleName());
+        }
+        return "[" + StringUtils.collectionToDelimitedString(data, ",") + "]";
     }
 
     private static Set<String> toStringNameSet(Method[] methodList) {
@@ -201,8 +248,12 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
     // add the RPC resolver..
     protected void prepareRPCResolver() {
         if (isInterfaceMode) {// if isInterface Mode
-            this.RPCResolvers.add(new HessianRPCResolver(this, requestMappingHandlerAdapter.getApplicationContext()));
+            this.RPCResolvers.add(new HessianRPCResolver(this, getApplicationContentByHandlerAdapter()));
         }
+    }
+
+    protected ApplicationContext getApplicationContentByHandlerAdapter() {
+        return requestMappingHandlerAdapter == null ? null : requestMappingHandlerAdapter.getApplicationContext();
     }
 
     protected String getSimpleClassName() {
@@ -252,6 +303,14 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
         while (m.find()) {
             System.out.println(m.group(1));
         }
+    }
+
+    public String getRenderDocument() {
+        return renderDocument;
+    }
+
+    public void setRenderDocument(String renderDocument) {
+        this.renderDocument = renderDocument;
     }
 
 }

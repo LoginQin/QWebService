@@ -3,6 +3,7 @@ package cn.duapi.qweb.utils;
 import java.lang.reflect.Type;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
 import org.codehaus.jackson.type.JavaType;
 
 import cn.duapi.qweb.exception.JsonRuntimeException;
@@ -10,6 +11,8 @@ import cn.duapi.qweb.exception.JsonRuntimeException;
 public class JsonUtils {
 
     public static ObjectMapper JSON_MAPPER = new ObjectMapper(); // can reuse, share
+
+    public static ObjectWriter JSON_PRETTY_WRITER = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
     //    static {
     //        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -29,6 +32,18 @@ public class JsonUtils {
             throw new JsonRuntimeException(e.getMessage(), e);
         }
 
+    }
+
+    public static String toFormatJson(Object obj) {
+        try {
+            if (obj == null) {
+                return null;
+            } else {
+                return JSON_PRETTY_WRITER.writeValueAsString(obj);
+            }
+        } catch (Exception e) {
+            throw new JsonRuntimeException(e.getMessage(), e);
+        }
     }
 
     public static <T> T toObject(String content, Class<T> valueType) {
@@ -52,6 +67,5 @@ public class JsonUtils {
         resultType = JSON_MAPPER.constructType(type);
         return resultType;
     }
-
 
 }

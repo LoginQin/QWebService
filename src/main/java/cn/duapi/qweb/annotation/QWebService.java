@@ -11,27 +11,40 @@ import javax.lang.model.type.NullType;
 import org.springframework.stereotype.Component;
 
 /**
- * 标注某个类方法开放QWebService接口
- * <P>
- * { url="/publicUrl/", api=Interfaces.class, value＝beanName }
- * <P>
- * QWebService是服务的出口, 所以理论上被标注的bean应该是 @Primary, 并且被注解的类最好不要被CGLIB代理
+ * Annotate the class is QWebService
  * 
  * <P>
- * url = "/rpc/yourservice/" [require 必须] 指定要发布的URL
+ * { url="/publicUrl/", api=Interfaces.class, value＝beanName, doc=true|[false] }
  * <P>
- * api = YourService.class [optional 可选] 指定要发布的接口方法, 建议指定接口来定义需要发布的各种方法
+ * QWebService is a service exports, and should be @Primary. The annotated
+ * classes had better not be CGLIB proxy
+ * 
  * <P>
- * value = beanName [optional 可选] 指定bean的名称, QWebService注解同时也是@Component,
- * 可以指定bean名称
+ * url = "/rpc/yourservice/" [require] Setting public url
  * <P>
- * 指定了api, 会采用接口模式, 如果不指定, 直接发布类, 可以用Http访问该类方法.
+ * api = YourService.class [optional] Specifies the interface method to publish
  * <P>
- * 但只有接口模式才能支持RPC客户端访问, 即需要QWebProxyFactoryBean或者HessianProxyFactoryBean,
- * 必须是接口模式
+ * value = beanName [optional] Specify the beanName of the QWebService, the bean
+ * has bean annotated by QWebService is also a @Component, so you can specify a
+ * bean name
+ * <P>
+ * doc = "" [optional] defualt="", Auto generate simple api document framework
+ * when access /publicUrl/ root url if `doc` value has settings.
+ * <P>
+ * If setting the `api`, that will use the interface mode, if not specified,
+ * worked directly with ClassMode,
+ * 
+ * You can use Http to access the class public method.
+ * <P>
+ * Only the interface mode can support the RPC client access, that means, if you
+ * want to use QWebProxyFactoryBean or HessianProxyFactoryBean, the QWebwervice
+ * must be an interface mode
  * 
  * @author qinwei
  * 
+ * @see cn.duapi.qweb.client.QWebProxyFactoryBean
+ * 
+ * @see org.springframework.remoting.caucho.HessianProxyFactoryBean
  */
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
@@ -44,5 +57,7 @@ public @interface QWebService {
     String url();
 
     Class<?> api() default NullType.class;
+
+    String doc() default "";
 
 }
