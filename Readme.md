@@ -11,7 +11,7 @@ QWebService 是一个基于Spring框架快速发布WebService的工具库, 目�
 <dependency>
     <groupId>cn.duapi.qweb</groupId>
     <artifactId>qwebservice</artifactId>
-    <version>1.1.1</version>
+    <version>1.2</version>
 </dependency>
 
 ```
