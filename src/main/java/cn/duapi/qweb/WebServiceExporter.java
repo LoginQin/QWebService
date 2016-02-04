@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -29,9 +30,11 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import cn.duapi.qweb.annotation.QWebConfig;
 import cn.duapi.qweb.doc.QWebDocumentRender;
+import cn.duapi.qweb.exception.ClientErrorException;
 import cn.duapi.qweb.rpcimpl.HessianRPCResolver;
 import cn.duapi.qweb.utils.JsonUtils;
 import cn.duapi.qweb.utils.RequestUtils;
@@ -63,7 +66,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
     // 引用原项目的adapter以便获取统一信息
     @Autowired(required = false)
     RequestMappingHandlerAdapter requestMappingHandlerAdapter;
-
+    
     // 接口方法
     Map<String, Method> methodMaps = new HashMap<String, Method>();
 
@@ -86,8 +89,8 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
     // private PathMatcher pathMatcher = new AntPathMatcher();
 
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) {
-        String methodName = getFirstMatchFromURL(request.getServletPath(), METHOD_URL_REGX);
-        String protolTypeName = getFirstMatchFromURL(request.getServletPath(), PROTOL_URL_REGX);
+        String methodName = getFirstMatchFromURL(request.getRequestURI(), METHOD_URL_REGX);
+        String protolTypeName = getFirstMatchFromURL(request.getRequestURI(), PROTOL_URL_REGX);
         Method method = methodMaps.get(methodName);
         QWebViewHandler viewRender = new JsonViewRender();
 
@@ -155,16 +158,23 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
             ModelAndView exceptionView = viewRender.getExceptionView(methodName, e.getTargetException());
             logger.error(e.getTargetException().getMessage(), e);
             try {
+                // Is need to print out to client?
                 exceptionView.getView().render(exceptionView.getModel(), request, response);
             } catch (Exception e1) {
                 printError(e1, request, response);
             }
 
         } catch (Throwable e) {
-            ModelAndView exceptionView = viewRender.getExceptionView(methodName, e);
-            logger.error(e.getMessage(), e);
+            ModelAndView exceptionView;
+            if ((e instanceof NoSuchMethodException || e instanceof TypeMismatchException)) {
+                // Shield the error message
+                exceptionView = viewRender.getExceptionView(methodName, new ClientErrorException("No Such Method or Params Error"));
+                logger.warn(e.getMessage());
+            } else {
+                exceptionView = viewRender.getExceptionView(methodName, e);
+            }
             try {
-                exceptionView.getView().render(exceptionView.getModel(), request, response);
+                exceptionView.getView().render(null, request, response);
             } catch (Exception e1) {
                 printError(e1, request, response);
             }
@@ -177,13 +187,12 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
     }
 
     public void printError(Exception e, HttpServletRequest request, HttpServletResponse response) {
-        e.printStackTrace();
+        logger.error(e.getMessage(), e);
         TextView view = new TextView(500, "ERROR");
         try {
             view.getView().render(view.getModel(), request, response);
         } catch (Exception e1) {
-            e1.printStackTrace();
-
+            logger.error(e1.getMessage(), e1);
         }
     }
 
