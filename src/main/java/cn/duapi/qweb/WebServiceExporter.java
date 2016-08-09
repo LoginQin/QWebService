@@ -30,7 +30,6 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import cn.duapi.qweb.annotation.QWebConfig;
 import cn.duapi.qweb.doc.QWebDocumentRender;
@@ -228,7 +227,7 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
                 implMethodMaps.put(name, methodImpl);
             }
 
-            logger.info("QWebService Method: " + ClassName + "." + methodImpl.getName() + getSimpleParameterTypeString(method.getParameterTypes()));
+            logger.debug("QWebService Method: " + ClassName + "." + methodImpl.getName() + getSimpleParameterTypeString(method.getParameterTypes()));
         }
 
         prepareRPCResolver();

@@ -101,14 +101,14 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
 
             if (isInterfaceMode) {
                 beanDefinitionBuilder.addPropertyValue("serviceInterface", interfaceName);
-                logger.info(beanName + " is [interfaceMode] , public for interface =>" + interfaceName);
+                logger.debug(beanName + " is [interfaceMode] , public for interface =>" + interfaceName);
             } else {
-                logger.info(beanName + " is [classMode]");
+                logger.debug(beanName + " is [classMode]");
             }
             // 注册bean
             defaultListableBeanFactory.registerBeanDefinition(beanName + "Exporter", beanDefinitionBuilder.getRawBeanDefinition());
             pro.setProperty(qwebAnn.url(), beanName + "Exporter");
-            logger.info("register-->" + beanName + "Exporter for URL=" + qwebAnn.url());
+            logger.debug("register-->" + beanName + "Exporter for URL=" + qwebAnn.url());
         }
 
         handlerMappingDefinitionBuilder.addPropertyValue("mappings", pro);
