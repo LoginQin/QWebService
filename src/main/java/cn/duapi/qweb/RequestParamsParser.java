@@ -1,5 +1,7 @@
 package cn.duapi.qweb;
 
+import java.lang.reflect.Method;
+
 import org.apache.log4j.Logger;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
@@ -12,8 +14,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolverCompo
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ServletRequestDataBinderFactory;
-
-import java.lang.reflect.Method;
 
 /**
  * 请求参数解析

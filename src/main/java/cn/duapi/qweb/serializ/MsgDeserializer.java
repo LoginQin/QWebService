@@ -38,13 +38,10 @@ public class MsgDeserializer extends JsonDeserializer<InvokeResult> {
 	// try {
 	// Object data = mapper.readValue(str, InvokeResult.class);
 	// } catch (JsonParseException e) {
-	// // TODO Auto-generated catch block
 	// e.printStackTrace();
 	// } catch (JsonMappingException e) {
-	// // TODO Auto-generated catch block
 	// e.printStackTrace();
 	// } catch (IOException e) {
-	// // TODO Auto-generated catch block
 	// e.printStackTrace();
 	// }
 	// }

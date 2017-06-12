@@ -7,17 +7,19 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.remoting.support.UrlBasedRemoteAccessor;
 
+import com.github.kevinsawicki.http.HttpRequest;
+
 import cn.duapi.qweb.exception.RPCInvokeException;
 import cn.duapi.qweb.serializ.InvokeResultDeserializer;
 import cn.duapi.qweb.utils.JsonUtils;
-
-import com.github.kevinsawicki.http.HttpRequest;
 
 public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements MethodInterceptor {
 
     static InvokeResultDeserializer invokeResultDeserializer = new InvokeResultDeserializer();
 
-    long readTimeout = -1;
+    int readTimeout = 10000; //milliseconds
+
+    int connectTimeout = 3000; //milliseconds
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
@@ -31,7 +33,12 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
         }
 
         try {
-            String resultStr = HttpRequest.post(this.getMethodURL(invocation.getMethod().getName())).form(param).body();
+            String resultStr = HttpRequest//
+                    .post(this.getMethodURL(invocation.getMethod().getName()))//
+                    .connectTimeout(this.connectTimeout)//
+                    .readTimeout(this.readTimeout)//
+                    .form(param)//
+                    .body();
             return invokeResultDeserializer.deserializ(resultStr, invocation.getMethod().getGenericReturnType());
         } catch (Exception e) {
             throw new RPCInvokeException("INVOKE ERROR=>" + getClassAndMethodName(invocation), e);
@@ -58,7 +65,7 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
         return readTimeout;
     }
 
-    public void setReadTimeout(long readTimeout) {
+    public void setReadTimeout(int readTimeout) {
         this.readTimeout = readTimeout;
     }
 
