@@ -1,6 +1,6 @@
 <meta charset="UTF-8" />
 <textarea id="markpage" style="display:none;" data-highlight-theme="github">
-#QWebService 说明
+# QWebService 说明
 QWebService 是一个基于Spring框架快速发布QWeb Service的远程访问的工具库, 目标是让开发WEB服务接口变得简单.
 
 一次发布, 多种方式调用: 
@@ -24,14 +24,14 @@ QWebService 是一个基于Spring框架快速发布QWeb Service的远程访问�
 
 > 就像OSI标准的七层模型规范和技术人员自己普遍适用的TCP/IP四层模型一样的道理, 往下不再做特殊说明.
 
-##QWebService可以解决什么痛点
+## QWebService可以解决什么痛点
 统一解决外部调用的问题.
 
 + 你用Hessian/DuowanRPC发布的RPC服务, 只能依托于对应的客户端访问, 无法在浏览器端调用, 此时前端同学需要调用你的服务, 你不得不再开发一个接口
 + 你用别的方式发布的Controller HTTP-WEB接口, 浏览器调用没问题, 客户端调用还需要模拟完整的HTTP调用逻辑, 特别Java端本身可以提供SDK, 你可能需要自己再写包装类
-+ 你写的HTTP接口,可以让客户端调用..但是浏览器端调用却不支持跨越...好吧, 再改改代码..
++ 你写的HTTP接口,可以让客户端调用..但是浏览器端调用却不支持跨域...好吧, 再改改代码..
 + 你用DuowanRPC发布的接口,公司外部或者没有DuowanRPC客户端的同事压根没法用.
-+ 你突然想用别的语言调用你开放的接口..由于最初开放的是Hessian协议等...你不得不努力为你的语言找一个Hessian模块..
++ 你突然想用别的语言调用你开放的接口..由于最初开放的是Hessian协议等...你不得不尝试为你的语言找一个Hessian模块..
 
 等等等等...一切的问题都是因为你的接口不够开放, 不够自由, 对客户端不友好.既然你都做成WEB服务让外部调用, 何不再公开透明一点? 
 
@@ -50,7 +50,7 @@ QWebService 是一个基于Spring框架快速发布QWeb Service的远程访问�
 
 当然如果你的项目上了`Dubbo`这样级别的服务, 那么我们的讨论的系统范围就不是一个级别的了. 这里解决普通RPC存在的场景.
 
-##Maven
+## Maven
 ```xml
 <dependency>
     <groupId>cn.duapi.qweb</groupId>
@@ -83,10 +83,10 @@ QWebService 是一个基于Spring框架快速发布QWeb Service的远程访问�
 ## 服务端 applicationContent.xml 配置
 QWebService支持注解发布, 和使用XML配置的方式发布.
 
-###注解方式发布QWebService
+### 注解方式发布QWebService
 如果你觉得自己配置XML实在太麻烦. QWebService提供了注解的方式.
 
-#####在项目的`applicationContext.xml`引入注解支持的注册器
+##### 在项目的`applicationContext.xml`引入注解支持的注册器
 ```html
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" 
@@ -100,12 +100,12 @@ QWebService支持注解发布, 和使用XML配置的方式发布.
 
 ```
 
-####在代码中使用`@QWebService`注解来标注QWebService
+#### 在代码中使用`@QWebService`注解来标注QWebService
 
-下面的方法前提是**需要让Spring框架扫描到你的这个类**自动装配Bean, @QWebService本质也是一个@Component, 所以你可以在项目的任何地方采用
+下面的方法前提是**需要让Spring框架扫描到你的这个类**自动装配Bean, `@QWebService`本质也是一个`@Component`, 所以你可以在项目的任何地方采用
 依赖注入的方式调用这个类.
 
-####类模式
+#### 类模式
 ```java
 @QWebService(url = "/rpc/mytest/")
 public class MyTestAPI {
@@ -120,30 +120,31 @@ public class MyTestAPI {
 }
 ```
 
-####接口模式
+#### 接口模式
 在注解中使用`api=`指定要发布的接口`url=`来表明映射的路径, `value`指定beanName(@Compoment)
 
 ```java
 // value = 发布的URL映射地址
 // api = 指定发布的接口方法为MyService
 // value = 指定beanName 
-@QWebService(url="/rpc/mytest/", api=MyService.class)
-public class MyTestAPI implements MyService, otherInterface{
+// doc = "简单的文档描述"
+@QWebService(url = "/rpc/mytest/", api = MyService.class)
+public class MyTestAPI implements MyService, OtherInterface{
 
     // MyService 中定义了一个方法, 这个只会发布这个方法
-    @Override
+    @Override // from MyService
     public boolean test() {
         return false;
     }
     
 
-    @Override
+    @Override // from OtherInterface
     public MyModel get(int id) {
         return new MyModel();
     }
 }
 ```
-###XML配置方式发布RPC
+### XML配置方式发布RPC
 
 如果想了解注册过程可以采用XML配置, 整个配置类似Hessian发布RPC一样
 
@@ -169,8 +170,8 @@ public class MyTestAPI implements MyService, otherInterface{
     </property>
 </bean>
 ```
-##QWeb客户端RPC访问
-```
+## QWeb客户端RPC访问
+```xml
 <bean id="cizuWebServiceRemote" class="cn.duapi.qweb.client.QWebProxyFactoryBean">
 	<property name="serviceUrl">
         <value>http://youdomain.com/rpc/mytest/</value>
@@ -183,8 +184,13 @@ public class MyTestAPI implements MyService, otherInterface{
 
 
 
-##Java-Hessian客户端访问
-#####applicationContent.xml配置
+## Java-Hessian客户端访问
+把接口发布的方法当成Hessian发布的一样用就行.
+> Hessian要求用到的序列化Bean都需要实现`Serializable`接口, 用过Hessian的人应该知道, 这个不是QWeb的约束, 而是Hessian的约束
+
+> QWeb,DuowanRPC方式发布的接口用到的序列化Bean, 不需要显式的实现`Serializable`接口
+
+##### applicationContent.xml配置
 ```xml
 <bean id="cizuWebServiceRemote" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
 	<property name="serviceUrl">
@@ -199,7 +205,7 @@ public class MyTestAPI implements MyService, otherInterface{
 
 ## <s>DuowanRPC -- 客户端访问 </s>
 因为需要支持通用化, 已经废止支持duowanRPC方式
-#####applicationContent.xml配置
+##### applicationContent.xml配置
 ```xml
 <bean id="cizuWebServiceRemote" class="com.duowan.common.rpc.client.RPCProxyFactoryBean">
 	<property name="serviceUrl">
@@ -212,20 +218,20 @@ public class MyTestAPI implements MyService, otherInterface{
 </bean>
 ```
 
-##浏览器客户端访问
+## 浏览器客户端访问
 直接把接口当成是一个HTTP接口, 用 `[方法名].do` 的方式调用Java的公共方法, 并按照URL参数协议传递参数即可
 比如发布的class有一个公共方法`list`, 直接利用`list.do` 调用
-#####直接调用
+##### 直接调用
 > http://youdomain.com/rpc/mytest/list.do?pageId=1
 
-#####跨域访问,支持JSONP, 只需要传递callback
+##### 跨域访问,支持JSONP, 只需要传递callback
 > http://youdomain.com/rpc/mytest/list.do?pageId=1&callback=cb
 
-#####跨域访问,支持返回JS, 只需要传递val
+##### 跨域访问,支持返回JS, 只需要传递val
 > http://youdomain.com/rpc/mytest/list.do?pageId=1&val=d
 
 
-##自定义返回结果格式
+## 自定义返回结果格式
 如果你不想返回Leopard格式的`JsonView`, 那么你还可以自定义返回格式, QWebService提供了一些自定义的功能.
 
 但这样做的后果是当前的`QWebService`只能基于Controller访问, 不能使用QWebService的Java客户端采用RPC方式连接上,比如Hessian等, 因为这破坏了统一的返回格式, 所以自定义的方式是不建议的.
@@ -236,9 +242,9 @@ public class MyTestAPI implements MyService, otherInterface{
 + 开放的类继承自`QWebViewHandler` 接口
 
 
-###方法中直接返回ModelAndView对象, 覆盖默认的JsonView
+### 方法中直接返回ModelAndView对象, 覆盖默认的JsonView
 ```java
-@QWebService(url="/rpc/mytest/")
+@QWebService(url = "/rpc/mytest/")
 public class MyTestAPI implements QWebViewHandler {
 
     public boolean test() {
@@ -251,7 +257,7 @@ public class MyTestAPI implements QWebViewHandler {
     }
 }
 ```
-###当前类实现`QWebViewHandler`接口
+### 当前类实现`QWebViewHandler`接口
 如果需要统一当前发布`QWebService`的所有公有方法体
 ```java
 @QWebService(url="/rpc/mytest/")
@@ -280,8 +286,22 @@ public class MyTestAPI implements QWebViewHandler {
     }
 }
 ```
+## 简单文档接口
 
-##关于
+`QWebService` 在1.2版本以后可以为每个开放的接口生成一个简单`markpage`文档(我的另一个开源项目), 为开放的接口生成一个HTML文档描述
+
+启用方式: 在注解`@QWebService`的`doc`接口添加一些描述使得内容非空, 默认会启用文档功能.
+
+如果不想启用, 不配置`doc`就行 
+
+启用文档后, 浏览器直接访问 `url`接口时会看见一个接口文档, 调用方法和参数类型一览无遗. 
+
+方便查阅, 是不是很像`WSDL`描述 (笑 :D ).  
+
+生成的`markpage`文档省去你自己写接口文档的麻烦(尤其是接口多,参数多的时候), 你可以另存为HTML文件, 然后为了隐蔽而关闭`doc`, 稍作修改, 就可以发给调用方了
+
+
+## 关于
 Author: Qin Wei ( ChineseTiger )
 
 email: qinwei081@gmail.com   
@@ -289,7 +309,7 @@ email: qinwei081@gmail.com
 email: qinwei081@foxmail.com
 
 
-###License
+### License
 
 [The Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 

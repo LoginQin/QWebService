@@ -27,7 +27,7 @@ QWebService 是一个基于Spring框架快速发布QWeb Service的远程访问�
 
 + 你用Hessian/DuowanRPC发布的RPC服务, 只能依托于对应的客户端访问, 无法在浏览器端调用, 此时前端同学需要调用你的服务, 你不得不再开发一个接口
 + 你用别的方式发布的Controller HTTP-WEB接口, 浏览器调用没问题, 客户端调用还需要模拟完整的HTTP调用逻辑, 特别Java端本身可以提供SDK, 你可能需要自己再写包装类
-+ 你写的HTTP接口,可以让客户端调用..但是浏览器端调用却不支持跨越...好吧, 再改改代码..
++ 你写的HTTP接口,可以让客户端调用..但是浏览器端调用却不支持跨域...好吧, 再改改代码..
 + 你用DuowanRPC发布的接口,公司外部或者没有DuowanRPC客户端的同事压根没法用.
 + 你突然想用别的语言调用你开放的接口..由于最初开放的是Hessian协议等...你不得不努力为你的语言找一个Hessian模块..
 
@@ -70,12 +70,12 @@ QWebService 是一个基于Spring框架快速发布QWeb Service的远程访问�
 
 国内使用oschina
 ```xml
-	<repositories>
-		<repository>
-			<id>qinwei-maven-release-repository</id>
-			<url>http://git.oschina.net/chinesetiger/maven-repo/raw/release/</url>
-		</repository>
-	</repositories>
+<repositories>
+    <repository>
+        <id>qinwei-maven-release-repository</id>
+        <url>http://git.oschina.net/chinesetiger/maven-repo/raw/release/</url>
+    </repository>
+</repositories>
 ```
 
 ## 服务端 applicationContent.xml 配置
@@ -100,7 +100,7 @@ QWebService支持注解发布, 和使用XML配置的方式发布.
 
 #### 在代码中使用`@QWebService`注解来标注QWebService
 
-下面的方法前提是**需要让Spring框架扫描到你的这个类**自动装配Bean, @QWebService本质也是一个@Component, 所以你可以在项目的任何地方采用
+下面的方法前提是**需要让Spring框架扫描到你的这个类**自动装配Bean, `@QWebService`本质也是一个`@Component`, 所以你可以在项目的任何地方采用
 依赖注入的方式调用这个类.
 
 #### 类模式
@@ -125,17 +125,17 @@ public class MyTestAPI {
 // value = 发布的URL映射地址
 // api = 指定发布的接口方法为MyService
 // value = 指定beanName 
-@QWebService(url="/rpc/mytest/", api=MyService.class)
-public class MyTestAPI implements MyService, otherInterface{
+@QWebService(url = "/rpc/mytest/", api = MyService.class)
+public class MyTestAPI implements MyService, OtherInterface{
 
     // MyService 中定义了一个方法, 这个只会发布这个方法
-    @Override
+    @Override //from MyService
     public boolean test() {
         return false;
     }
     
 
-    @Override
+    @Override // from OtherInterface
     public MyModel get(int id) {
         return new MyModel();
     }
@@ -182,6 +182,11 @@ public class MyTestAPI implements MyService, otherInterface{
 
 
 ## Java-Hessian客户端访问
+把接口发布的方法当成Hessian发布的一样用就行.
+> Hessian要求用到的序列化Bean都需要实现`Serializable`接口, 用过Hessian的人应该知道, 这个不是QWeb的约束, 而是Hessian的约束
+
+> QWeb,DuowanRPC方式发布的接口用到的序列化Bean, 不需要显式的实现`Serializable`接口
+
 ##### applicationContent.xml配置
 ```xml
 <bean id="cizuWebServiceRemote" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
@@ -252,7 +257,7 @@ public class MyTestAPI implements QWebViewHandler {
 ### 当前类实现`QWebViewHandler`接口
 如果需要统一当前发布`QWebService`的所有公有方法体
 ```java
-@QWebService(url="/rpc/mytest/")
+@QWebService(url = "/rpc/mytest/")
 public class MyTestAPI implements QWebViewHandler {
 
     public boolean test() {
@@ -278,6 +283,21 @@ public class MyTestAPI implements QWebViewHandler {
     }
 }
 ```
+
+## 简单文档接口
+
+`QWebService` 在1.2版本以后可以为每个开放的接口生成一个简单`markpage`文档(我的另一个开源项目), 为开放的接口生成一个HTML文档描述
+
+启用方式: 在注解`@QWebService`的`doc`接口添加一些描述使得内容非空, 默认会启用文档功能.
+
+如果不想启用, 不配置`doc`就行 
+
+启用文档后, 浏览器直接访问 `url`接口时会看见一个接口文档, 调用方法和参数类型一览无遗. 
+
+方便查阅, 是不是很像`WSDL`描述干的事情. (笑 :D ).  
+
+生成的`markpage`文档省去你自己写接口文档的麻烦(尤其是接口多,参数多的时候), 你可以另存为HTML文件, 然后为了隐蔽而关闭`doc`, 稍作修改, 就可以发给调用方了
+
 
 ## 关于
 Author: Qin Wei ( ChineseTiger )
