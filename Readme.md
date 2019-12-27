@@ -1,8 +1,7 @@
-# QWebService 说明
-
-Quickly Web Service 
+# QWebService - Quickly Web Service 
 
 QWebService 是一个基于Spring框架快速发布QWeb Service的RPC远程访问的工具库, 目标是让开发开放WEB服务接口变得简单.
+
 ## 启用方法
 ### pom.xml
 ```xml
