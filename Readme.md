@@ -43,7 +43,7 @@ QWebService 是一个基于Spring框架快速发布QWeb Service的RPC远程访�
 - `api` 指定要发布的接口`url=`来表明映射的路径
 - `value`指定beanName(@Compoment)
 - `doc` 是否打开简单文档
-- `accessToken` 是否启动token校验
+- `accessToken` 是否启动token校验, 客户端请求需要带上accessToken
 
 2.0版本砍掉了类发布支持, 接口模式更规范, 而且对于RPC场景, 都是需要先定义接口
 
@@ -197,7 +197,7 @@ public class MyTestAPI implements QWebViewHandler {
 
 ## 简单文档接口
 
-`QWebService` 在1.2版本以后可以为每个开放的接口生成一个简单`markpage`文档(我的另一个开源项目), 为开放的接口生成一个HTML文档描述
+`QWebService` 在1.2版本以后可以为每个开放的接口生成一个简单`markpage`文档(自主), 为开放的接口生成一个HTML文档描述
 
 启用方式: 在注解`@QWebService`的`doc`接口添加一些描述使得内容非空, 默认会启用文档功能.
 
