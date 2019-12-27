@@ -1,24 +1,27 @@
 package cn.duapi.qweb.utils;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
-import org.codehaus.jackson.type.JavaType;
+import javax.servlet.http.HttpServletRequest;
+
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import cn.duapi.qweb.exception.JsonRuntimeException;
 
+/**
+ * @Author qinwei
+ */
 public class JsonUtils {
 
-    public static ObjectMapper JSON_MAPPER = new ObjectMapper(); // can reuse, share
+    /**
+     * can reuse, share
+     */
+    public static ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     public static ObjectWriter JSON_PRETTY_WRITER = new ObjectMapper().writer().withDefaultPrettyPrinter();
-
-    //    static {
-    //        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    //
-    //        JSON_MAPPER.setDateFormat(fmt);
-    //    }
 
     public static String toJson(Object obj) {
         if (obj == null) {
@@ -26,12 +29,22 @@ public class JsonUtils {
         }
 
         try {
-            String str = JSON_MAPPER.writeValueAsString(obj);
-            return str;
+            return JSON_MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
             throw new JsonRuntimeException(e.getMessage(), e);
         }
+    }
 
+    public static byte[] toJsonBytes(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        try {
+            return JSON_MAPPER.writeValueAsBytes(obj);
+        } catch (Exception e) {
+            throw new JsonRuntimeException(e.getMessage(), e);
+        }
     }
 
     public static String toFormatJson(Object obj) {
@@ -54,6 +67,8 @@ public class JsonUtils {
         }
     }
 
+
+
     public static Object toObject(String json, Type type) {
         try {
             return JSON_MAPPER.readValue(json, getJavaType(type));
@@ -66,6 +81,15 @@ public class JsonUtils {
         JavaType resultType;
         resultType = JSON_MAPPER.constructType(type);
         return resultType;
+    }
+
+    public static void main(String[] args) {
+        try {
+            Object o = JSON_MAPPER.readValue("hello", getJavaType(String.class));
+            System.out.println(o);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

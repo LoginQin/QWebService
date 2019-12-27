@@ -6,9 +6,8 @@ import cn.duapi.qweb.QWebViewHandler;
 
 /**
  * This render is default Json render
- * 
+ *
  * @author qinwei
- * 
  */
 public class JsonViewRender implements QWebViewHandler {
 
@@ -16,14 +15,14 @@ public class JsonViewRender implements QWebViewHandler {
     public ModelAndView getResultView(String currMethodName, Object result) {
         JsonView view = new JsonView();
         view.setData(result);
-        view.setStatus(200);
+        view.setCode(200);
         return view;
     }
 
     @Override
     public ModelAndView getExceptionView(String currMethodName, Throwable ex) {
         JsonView view = new JsonView();
-        view.setStatus(-400);
+        view.setCode(-400);
         view.setMessage(ex.getMessage());
         return view;
     }

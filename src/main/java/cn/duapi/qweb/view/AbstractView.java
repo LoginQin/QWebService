@@ -11,7 +11,7 @@ import org.springframework.web.servlet.view.AbstractUrlBasedView;
 
 /**
  * 抽象视图
- * 
+ *
  * @from Leopard
  */
 public abstract class AbstractView extends ModelAndView {
@@ -24,7 +24,9 @@ public abstract class AbstractView extends ModelAndView {
             if (body == null) {
                 return;
             }
-            response.setContentType(AbstractView.this.getContentType());
+            if (AbstractView.this.getContentType() != null) {
+                response.setContentType(AbstractView.this.getContentType());
+            }
             response.setContentLength(body.getBytes().length);
             response.setCharacterEncoding(getCharacterEncoding());
             // Flush byte array to servlet output stream.
@@ -39,9 +41,6 @@ public abstract class AbstractView extends ModelAndView {
         super.setView(view);
     }
 
-    public int getHttpCode() {
-        return 200;
-    }
     public abstract String getContentType();
 
     public String getCharacterEncoding() {

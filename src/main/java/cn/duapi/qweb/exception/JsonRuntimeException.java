@@ -11,4 +11,7 @@ public class JsonRuntimeException extends RuntimeException {
         super(message, cause);
     }
 
+    public JsonRuntimeException(String message) {
+        super(message);
+    }
 }

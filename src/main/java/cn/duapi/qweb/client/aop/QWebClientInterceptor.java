@@ -17,9 +17,31 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
 
     static InvokeResultDeserializer invokeResultDeserializer = new InvokeResultDeserializer();
 
-    int readTimeout = 10000; //milliseconds
+    final static String USER_AGENT = "QWebRPC/2.0";
 
-    int connectTimeout = 3000; //milliseconds
+    /**
+     * Invoke accessToken
+     */
+    String accessToken = "";
+
+    /**
+     * milliseconds
+     */
+    int readTimeout = 10_000;
+
+    /**
+     * milliseconds
+     */
+    int connectTimeout = 3_000;
+
+
+    public int getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
+    }
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
@@ -28,16 +50,20 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
 
         if (arg != null) {
             for (int i = 0; i < arg.length; i++) {
-                param.put("__qwebparam[" + i + "]", JsonUtils.toJson(arg[i]));
+                param.put("q[" + i + "]", JsonUtils.toJson(arg[i]));
             }
         }
 
         try {
-            String resultStr = HttpRequest//
-                    .post(this.getMethodURL(invocation.getMethod().getName()))//
-                    .connectTimeout(this.connectTimeout)//
-                    .readTimeout(this.readTimeout)//
-                    .form(param)//
+            String resultStr = HttpRequest //
+                    .post(this.getMethodURL(invocation.getMethod().getName())) //
+                    .useProxy("127.0.0.1", 8888)
+                    .connectTimeout(this.connectTimeout) //
+                    .readTimeout(this.readTimeout) //
+                    .authorization(accessToken) //
+                    .userAgent(USER_AGENT)
+                    .acceptGzipEncoding() //
+                    .form(param)
                     .body();
             return invokeResultDeserializer.deserializ(resultStr, invocation.getMethod().getGenericReturnType());
         } catch (Exception e) {
@@ -57,6 +83,7 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
     public void afterPropertiesSet() {
     }
 
+    @Override
     public void setServiceUrl(String serviceUrl) {
         super.setServiceUrl(serviceUrl.trim());
     }
@@ -69,4 +96,11 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
         this.readTimeout = readTimeout;
     }
 
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
 }

@@ -12,41 +12,39 @@ import org.springframework.stereotype.Component;
 
 /**
  * Annotate the class is QWebService
- * 
- * <P>
+ * <p>
+ * <p>
  * { url="/publicUrl/", api=Interfaces.class, value＝beanName, doc=true|[false] }
- * <P>
+ * <p>
  * QWebService is a service exports, and should be @Primary. The annotated
  * classes had better not be CGLIB proxy
- * 
- * <P>
+ * <p>
+ * <p>
  * url = "/rpc/yourservice/" [require] Setting public url
- * <P>
+ * <p>
  * api = YourService.class [optional] Specifies the interface method to publish
- * <P>
+ * <p>
  * value = beanName [optional] Specify the beanName of the QWebService, the bean
  * has bean annotated by QWebService is also a @Component, so you can specify a
  * bean name
- * <P>
+ * <p>
  * doc = "" [optional] defualt="", Auto generate simple api document framework
  * when access /publicUrl/ root url if `doc` value has settings.
- * <P>
+ * <p>
  * If setting the `api`, that will use the interface mode, if not specified,
  * worked directly with ClassMode,
- * 
+ * <p>
  * You can use Http to access the class public method.
- * <P>
+ * <p>
  * Only the interface mode can support the RPC client access, that means, if you
  * want to use QWebProxyFactoryBean or HessianProxyFactoryBean, the QWebwervice
  * must be an interface mode
- * 
+ *
  * @author qinwei
- * 
  * @see cn.duapi.qweb.client.QWebProxyFactoryBean
- * 
  * @see org.springframework.remoting.caucho.HessianProxyFactoryBean
  */
-@Target({ ElementType.TYPE })
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Component
@@ -56,8 +54,10 @@ public @interface QWebService {
 
     String url();
 
-    Class<?> api() default NullType.class;
+    Class<?> api();
 
     String doc() default "";
+
+    String accessToken() default "";
 
 }

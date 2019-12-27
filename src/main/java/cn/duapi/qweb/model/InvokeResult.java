@@ -1,31 +1,31 @@
 package cn.duapi.qweb.model;
 
 public class InvokeResult {
-	private int status;
-	private String message;
-	private Object data;
+    private int code;
+    private String message;
+    private Object data;
 
-	public int getStatus() {
-		return status;
-	}
+    public int getCode() {
+        return code;
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    public void setCode(int code) {
+        this.code = code;
+    }
 
-	public Object getData() {
-		return data;
-	}
+    public String getMessage() {
+        return message;
+    }
 
-	public void setStatus(int status) {
-		this.status = status;
-	}
+    public Object getData() {
+        return data;
+    }
 
-	public void setMessage(String message) {
-		this.message = message;
-	}
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
-	public void setData(Object data) {
-		this.data = data;
-	}
+    public void setData(Object data) {
+        this.data = data;
+    }
 }

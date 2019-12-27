@@ -3,18 +3,15 @@ package cn.duapi.qweb.view;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+
 public class TextView extends AbstractView {
 
     private String message;
-    private int httpCode;
 
-    public TextView(int httpCode, final String message) {
+    public TextView(HttpStatus httpCode, final String message) {
+        this.setStatus(httpCode);
         this.message = message;
-    }
-
-    @Override
-    public int getHttpCode() {
-        return this.httpCode;
     }
 
     public String getMessage() {

@@ -17,12 +17,12 @@ public interface QWebViewHandler {
      * <P>
      * 可以自定义返回结果集的模板
      */
-    public ModelAndView getResultView(String currMethodName, Object result);
+    ModelAndView getResultView(String currMethodName, Object result);
 
     /**
      * 
      * @param currMethodName
      * @param ex
      */
-    public ModelAndView getExceptionView(String currMethodName, Throwable ex);
+    ModelAndView getExceptionView(String currMethodName, Throwable ex);
 }

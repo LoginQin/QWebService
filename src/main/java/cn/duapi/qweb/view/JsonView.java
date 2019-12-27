@@ -13,8 +13,8 @@ import cn.duapi.qweb.utils.JsonpUtils;
 
 public class JsonView extends AbstractView {
 
-    private int status;
-    private String message;
+    private int code;
+    private String message = "";
     private Object data;
 
     public JsonView() {
@@ -25,18 +25,18 @@ public class JsonView extends AbstractView {
         this(200, data);
     }
 
-    public JsonView(int status, Object data) {
-        this.status = status;
+    public JsonView(int code, Object data) {
+        this.code = code;
         this.data = data;
         this.message = "";
     }
 
-    public int getStatus() {
-        return status;
+    public int getCode() {
+        return code;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
+    public void setCode(int code) {
+        this.code = code;
     }
 
     public Object getData() {
@@ -57,11 +57,13 @@ public class JsonView extends AbstractView {
 
     @Override
     public String getContentType() {
-        return "text/plain; charset=UTF-8";
+        return null;
     }
 
+    final static String JS = "application/javascript; charset=utf-8";
+    final static String JSON = "application/json; charset=utf-8";
+
     /**
-     * 
      * 1、默认返回json <br/>
      * URL:http://message.game.yy.com/test/json.do<br/>
      * 返回:{"status":200,"message":"","data":{"username":"hctan","nickname":
@@ -73,7 +75,7 @@ public class JsonView extends AbstractView {
      * 3、非法callback参数 <br/>
      * URL:http://message.game.yy.com/test/json.do?callback=callback.aa <br/>
      * 返回:// 非法callback[callback.aa]. <br/>
-     * 
+     * <p>
      * 4、自定义var参数，返回script <br/>
      * URL:http://message.game.yy.com/test/json.do?var=abc <br/>
      * 返回:var abc =
@@ -88,26 +90,31 @@ public class JsonView extends AbstractView {
         {
             String callback = request.getParameter("callback");
             if (!StringUtils.isEmpty(callback)) {
+                response.setContentType(JS);
                 return this.toJsonp(callback);
             }
         }
         {
             String var = request.getParameter("var");
             if (!StringUtils.isEmpty(var)) {
+                response.setContentType(JS);
                 return this.toScript(var);
             }
         }
-        return this.toJson();// 普通json
+
+        response.setContentType(JSON);
+        // 普通json
+        return this.toJson();
     }
 
     /**
      * 返回结果.
-     * 
+     *
      * @return
      */
     protected Map<String, Object> getResult() {
         Map<String, Object> map = new LinkedHashMap<String, Object>();
-        map.put("status", this.getStatus());
+        map.put("code", this.getCode());
         map.put("message", this.message);
         map.put("data", this.getData());
         return map;

@@ -4,9 +4,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import javax.lang.model.type.NullType;
-
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -16,22 +15,21 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import cn.duapi.qweb.annotation.QWebService;
+import cn.duapi.qweb.exception.RPCExportException;
 
 /**
  * QWebService Register
- * <P>
+ * <p>
  * Scan all QWebService annotation
- * 
+ *
  * @author qinwei
- * 
  */
 public class QWebAnnotationRegister implements ApplicationContextAware, InitializingBean {
 
-    final static Logger logger = Logger.getLogger(QWebAnnotationRegister.class);
+    private final static Logger logger = LoggerFactory.getLogger(QWebAnnotationRegister.class);
 
     ApplicationContext applicationContext;
 
@@ -59,76 +57,52 @@ public class QWebAnnotationRegister implements ApplicationContextAware, Initiali
         BeanDefinitionBuilder handlerMappingDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(WebServiceUrlHandlerMapping.class);
 
         for (Entry<String, Object> bean : beans.entrySet()) {
-
-            String beanName = bean.getKey();
-
-            Object targetBean = bean.getValue();// this bean maybe a proxy bean, so use AopUtils.getTargetClass
-
-            Class<?> targetClazz = AopUtils.getTargetClass(targetBean);
-
-            if (ClassUtils.isCglibProxyClass(targetClazz)) {
-                // 被CGLIB代理的类,是动态代码, 映射不到参数名称, 忽略
-                String errorMsg = "!!!WARN The bean name=[" + beanName
-                        + "] is EnhanceByCGLIB, QWebService Can't Work OK! This Error will be ignore! You'd better choose a clean bean without any proxy to use QWebService";
-                logger.error(errorMsg);
-                System.err.println(errorMsg);
-                continue;
-            }
-
-            QWebService qwebAnn = AnnotationUtils.findAnnotation(targetClazz, QWebService.class);
-
-            // 通过BeanDefinitionBuilder创建bean定义
-            BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(WebServiceExporter.class);
-
-            beanDefinitionBuilder.addPropertyReference("service", beanName);
-
-            String interfaceName = null;
-            // interface mode
-            if (!NullType.class.equals(qwebAnn.api())) {
-                //set by api value
-                interfaceName = qwebAnn.api().getName();
-            } else {
-                Class<?> firstImplementInterface = getFirstIntefacesByDefault(targetBean);
-                //get first interface default, not include  QWebViewHandler
-                interfaceName = firstImplementInterface != null ? firstImplementInterface.getName() : null;
-            }
-
-            if (!StringUtils.isEmpty(qwebAnn.doc())) {
-                beanDefinitionBuilder.addPropertyValue("renderDocument", qwebAnn.doc());
-            }
-
-            boolean isInterfaceMode = !StringUtils.isEmpty(interfaceName);
-
-            if (isInterfaceMode) {
-                beanDefinitionBuilder.addPropertyValue("serviceInterface", interfaceName);
-                logger.debug(beanName + " is [interfaceMode] , public for interface =>" + interfaceName);
-            } else {
-                logger.debug(beanName + " is [classMode]");
-            }
-            // 注册bean
-            defaultListableBeanFactory.registerBeanDefinition(beanName + "Exporter", beanDefinitionBuilder.getRawBeanDefinition());
-            pro.setProperty(qwebAnn.url(), beanName + "Exporter");
-            logger.debug("register-->" + beanName + "Exporter for URL=" + qwebAnn.url());
+            registerQwebExporter(defaultListableBeanFactory, pro, bean);
         }
 
         handlerMappingDefinitionBuilder.addPropertyValue("mappings", pro);
-
         defaultListableBeanFactory.registerBeanDefinition("qwebUrlMap", handlerMappingDefinitionBuilder.getRawBeanDefinition());
 
     }
 
-    protected Class<?> getFirstIntefacesByDefault(Object target) {
+    /**
+     * 注册Exporter
+     *
+     * @param defaultListableBeanFactory
+     * @param pro
+     * @param bean
+     */
+    private void registerQwebExporter(DefaultListableBeanFactory defaultListableBeanFactory, Properties pro, Entry<String, Object> bean) {
+        String beanName = bean.getKey();
+        // this bean maybe a proxy bean, so use AopUtils.getTargetClass
+        Object targetBean = bean.getValue();
 
-        for (Class<?> clazz : target.getClass().getInterfaces()) {
-            //ignore QWebViewHandler, org.springframework.aop.SpringProxy org.springframework.cglib....
-            // target bean maybe a proxy bean (by AOP or CGLIB) which will implement some spring aop intefaces
-            // if want to public spring interface , use "api={spring.interface}" instead in QWebService Annotation
-            if (clazz.equals(QWebViewHandler.class) || clazz.getName().startsWith("org.springframework")) {
-                continue;
-            }
-            return clazz;
+        Class<?> targetClazz = AopUtils.getTargetClass(targetBean);
+
+        QWebService qwebAnn = AnnotationUtils.findAnnotation(targetClazz, QWebService.class);
+
+        // 通过BeanDefinitionBuilder创建bean定义
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(WebServiceExporter.class);
+
+        beanDefinitionBuilder.addPropertyReference("service", beanName);
+
+        String interfaceName = qwebAnn.api().getName();
+
+        if (interfaceName == null) {
+            throw new RPCExportException("the rpc bean [" + beanName + "] should specify an interface!");
         }
 
-        return null;
+        if (!StringUtils.isEmpty(qwebAnn.doc())) {
+            beanDefinitionBuilder.addPropertyValue("renderDocument", qwebAnn.doc());
+        }
+
+        beanDefinitionBuilder.addPropertyValue("serviceInterface", interfaceName);
+        beanDefinitionBuilder.addPropertyValue("accessToken", qwebAnn.accessToken());
+
+        // 注册bean
+        defaultListableBeanFactory.registerBeanDefinition(beanName + "Exporter", beanDefinitionBuilder.getRawBeanDefinition());
+        pro.setProperty(qwebAnn.url(), beanName + "Exporter");
+        logger.debug("register-->" + beanName + "Exporter for URL=" + qwebAnn.url());
     }
+
 }
