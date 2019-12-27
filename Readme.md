@@ -36,7 +36,7 @@ QWebService 是一个基于Spring框架快速发布QWeb Service的RPC远程访�
 下面的方法前提是**需要让Spring框架扫描到你的这个类**自动装配Bean, `@QWebService`本质也是一个`@Component`, 所以你可以在项目的任何地方采用
 依赖注入的方式调用这个类.
 
-#### 发布服务: 注解模式 
+### 发布服务模式一: 注解模式 
 `@QWebService`参数说明:
 - `url` 
     指定要发布RPC-URL路径
