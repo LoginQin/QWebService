@@ -83,13 +83,5 @@ public class JsonUtils {
         return resultType;
     }
 
-    public static void main(String[] args) {
-        try {
-            Object o = JSON_MAPPER.readValue("hello", getJavaType(String.class));
-            System.out.println(o);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 }
