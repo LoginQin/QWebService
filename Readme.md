@@ -124,7 +124,7 @@ public TestWebService testWebService() {
      "accesskey");
 }
 ```
-#### 浏览器客户端访问
+### 2. 浏览器客户端访问
 直接把接口当成是一个HTTP接口, 用 `[方法名].do` 的方式调用接口,  并按照URL参数协议传递参数即可
 比如`list.do`
 ##### 直接调用

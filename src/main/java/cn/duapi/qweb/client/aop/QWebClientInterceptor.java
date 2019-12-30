@@ -5,10 +5,13 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.remoting.support.UrlBasedRemoteAccessor;
+import org.springframework.util.StringUtils;
 
 import com.github.kevinsawicki.http.HttpRequest;
 
+import cn.duapi.qweb.config.QWebDefaultProperty;
 import cn.duapi.qweb.exception.RPCInvokeException;
 import cn.duapi.qweb.serializ.InvokeResultDeserializer;
 import cn.duapi.qweb.utils.JsonUtils;
@@ -19,6 +22,9 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
 
     final static String USER_AGENT = "QWebRPC/2.0";
 
+    @Autowired(required = false)
+    QWebDefaultProperty qWebDefaultProperty;
+
     /**
      * Invoke accessToken
      */
@@ -27,21 +33,12 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
     /**
      * milliseconds
      */
-    int readTimeout = 10_000;
+    int readTimeout;
 
     /**
      * milliseconds
      */
-    int connectTimeout = 3_000;
-
-
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public void setConnectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
-    }
+    int connectTimeout;
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
@@ -57,10 +54,9 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
         try {
             String resultStr = HttpRequest //
                     .post(this.getMethodURL(invocation.getMethod().getName())) //
-                    .useProxy("127.0.0.1", 8888)
-                    .connectTimeout(this.connectTimeout) //
-                    .readTimeout(this.readTimeout) //
-                    .authorization(accessToken) //
+                    .connectTimeout(this.getConnectTimeout()) //
+                    .readTimeout(this.getReadTimeout()) //
+                    .authorization(this.getAccessToken()) //
                     .userAgent(USER_AGENT)
                     .acceptGzipEncoding() //
                     .form(param)
@@ -69,6 +65,18 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
         } catch (Exception e) {
             throw new RPCInvokeException("INVOKE ERROR=>" + getClassAndMethodName(invocation), e);
         }
+    }
+
+    public int getConnectTimeout() {
+        if (connectTimeout > 0) {
+            return connectTimeout;
+        }
+
+        return qWebDefaultProperty.getConnectTimeout();
+    }
+
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
     }
 
     String getClassAndMethodName(MethodInvocation invocation) {
@@ -81,6 +89,9 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
 
     @Override
     public void afterPropertiesSet() {
+        if (qWebDefaultProperty == null) {
+            qWebDefaultProperty = new QWebDefaultProperty();
+        }
     }
 
     @Override
@@ -88,8 +99,12 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
         super.setServiceUrl(serviceUrl.trim());
     }
 
-    public long getReadTimeout() {
-        return readTimeout;
+    public int getReadTimeout() {
+        if (readTimeout > 0) {
+            return readTimeout;
+        }
+
+        return qWebDefaultProperty.getReadTimeout();
     }
 
     public void setReadTimeout(int readTimeout) {
@@ -97,7 +112,11 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
     }
 
     public String getAccessToken() {
-        return accessToken;
+        if (StringUtils.hasText(this.accessToken)) {
+            return accessToken;
+        }
+
+        return qWebDefaultProperty.getAccessToken();
     }
 
     public void setAccessToken(String accessToken) {
