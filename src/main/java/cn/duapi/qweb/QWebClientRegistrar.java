@@ -7,9 +7,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
@@ -40,16 +46,23 @@ import cn.duapi.qweb.config.QWebDefaultProperty;
  * @since 2019/12/27
  */
 public class QWebClientRegistrar
-        implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
+        implements ImportBeanDefinitionRegistrar, BeanFactoryAware, ResourceLoaderAware, EnvironmentAware {
 
     private ResourceLoader resourceLoader;
 
     private Environment environment;
 
+    private ConfigurableListableBeanFactory beanFactory;
+
+    private final static Logger LOG = LoggerFactory.getLogger(QWebClientRegistrar.class);
+
     @Override
     public void registerBeanDefinitions(AnnotationMetadata annotationMetadata,
                                         BeanDefinitionRegistry beanDefinitionRegistry) {
         if (annotationMetadata.getAnnotationAttributes(EnableQWebClients.class.getName()) == null) {
+            return;
+        }
+        if (beanFactory == null) {
             return;
         }
 
@@ -117,6 +130,17 @@ public class QWebClientRegistrar
     private void registerQWebClient(BeanDefinitionRegistry registry,
                                     AnnotationMetadata annotationMetadata, Map<String, Object> attributes) {
         String className = annotationMetadata.getClassName();
+        try {
+            Class<?> aClass = Class.forName(className);
+            String[] beanNamesForType = beanFactory.getBeanNamesForType(aClass);
+            if (beanNamesForType != null && beanNamesForType.length > 0) {
+                LOG.warn("QWebClient already has implement ignore auto create : {}, {}", className, beanNamesForType);
+                return;
+            }
+        } catch (ClassNotFoundException e) {
+            LOG.error(e.getMessage(), e);
+            return;
+        }
         BeanDefinitionBuilder definition = BeanDefinitionBuilder
                 .genericBeanDefinition(QWebProxyFactoryBean.class);
 
@@ -218,4 +242,10 @@ public class QWebClientRegistrar
         this.resourceLoader = resourceLoader;
     }
 
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        if (beanFactory instanceof ConfigurableListableBeanFactory) {
+            this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
+        }
+    }
 }
