@@ -13,6 +13,7 @@ import com.github.kevinsawicki.http.HttpRequest;
 
 import cn.duapi.qweb.config.QWebDefaultProperty;
 import cn.duapi.qweb.exception.RPCInvokeException;
+import cn.duapi.qweb.exception.RemoteCauseException;
 import cn.duapi.qweb.serializ.InvokeResultDeserializer;
 import cn.duapi.qweb.utils.JsonUtils;
 
@@ -62,6 +63,8 @@ public class QWebClientInterceptor extends UrlBasedRemoteAccessor implements Met
                     .form(param)
                     .body();
             return invokeResultDeserializer.deserializ(resultStr, invocation.getMethod().getGenericReturnType());
+        } catch (RemoteCauseException e) {
+            throw e;
         } catch (Exception e) {
             throw new RPCInvokeException("INVOKE ERROR=>" + getClassAndMethodName(invocation), e);
         }

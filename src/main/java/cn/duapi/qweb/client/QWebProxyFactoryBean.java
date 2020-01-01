@@ -44,6 +44,7 @@ public class QWebProxyFactoryBean extends QWebClientInterceptor implements Facto
         qWebClientInterceptor.setServiceUrl(url);
         qWebClientInterceptor.setReadTimeout(readTimeout);
         qWebClientInterceptor.setConnectTimeout(connectTimeout);
+        qWebClientInterceptor.afterPropertiesSet();
         return ProxyFactory.getProxy(interfaces, qWebClientInterceptor);
     }
 

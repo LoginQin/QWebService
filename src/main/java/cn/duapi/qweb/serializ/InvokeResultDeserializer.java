@@ -43,6 +43,8 @@ public class InvokeResultDeserializer {
             return result;
         } catch (RPCInvokeException e) {
             throw new RemoteCauseException(e.getMessage(), e);
+        } catch (RemoteCauseException e) {
+            throw e;
         } catch (Exception e) {
             throw new JsonRuntimeException("Unexpected REMOTE RETURN=>" + str, e);
         }

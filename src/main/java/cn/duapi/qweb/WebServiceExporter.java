@@ -155,8 +155,9 @@ public class WebServiceExporter extends RemoteExporter implements HttpRequestHan
             modelAndView.getView().render(modelAndView.getModel(), request, response);
 
         } catch (InvocationTargetException e) {
-            ModelAndView exceptionView = getViewRender(isRpc).getExceptionView(methodName, e.getTargetException());
-            logger.error(e.getTargetException().getMessage(), e);
+            // 目标方法抛出的具体异常
+            ModelAndView exceptionView = getViewRender(isRpc).getExceptionView(methodName, e);
+            logger.error(e.getTargetException().getMessage(), e.getTargetException());
             try {
                 exceptionView.getView().render(exceptionView.getModel(), request, response);
             } catch (Exception e1) {

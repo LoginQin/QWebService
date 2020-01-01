@@ -124,6 +124,41 @@ public TestWebService testWebService() {
      "accesskey");
 }
 ```
+
+
+- 模式4: @QWebClient客户端
+在定义接口的时候. 直接定义客户端, 这在制作SDK给别人用的时候, 其他人不需要关心如何创建代理
+使用`@WebClient`客户端需要开启注解扫描和自动代理 `@EnableQWebClients` 指定要扫描`@QWebClient`注解的包
+```java
+@QWebClient(baseUrl = "${qweb.client.base-url}", path = FirstGuideService.DIR, accessToken = "${qweb.client.access-token:}")
+public interface FirstGuideService {
+
+    String DIR =  "/rpc/firstGuide";
+
+    /**
+     * test
+     *
+     * @param model
+     * @param name
+     * @param version
+     * @return
+     */
+    FirstGuideModel find(FirstGuideModel model, String name, Integer version);
+}
+```
+
+开启QWebClient注解扫描
+```java
+@SpringBootApplication(scanBasePackages = "com.example.demo")
+@EnableQWebClients("com.mamu.server.api") // 指定扫描的包
+public class DemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+
+}
+```
 ### 2. 浏览器客户端访问
 直接把接口当成是一个HTTP接口, 用 `[方法名].do` 的方式调用接口,  并按照URL参数协议传递参数即可
 比如`list.do`

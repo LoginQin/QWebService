@@ -3,6 +3,7 @@ package cn.duapi.qweb;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
+import org.springframework.core.Ordered;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 
 /**
@@ -32,6 +33,11 @@ public class WebServiceUrlHandlerMapping extends SimpleUrlHandlerMapping {
                 url += "**";
                 registerHandler(url, handler);
             }
+            setOrder(Ordered.HIGHEST_PRECEDENCE);
         }
     }
+
+
+
+
 }

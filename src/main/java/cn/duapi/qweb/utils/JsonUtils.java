@@ -3,8 +3,6 @@ package cn.duapi.qweb.utils;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -62,11 +60,10 @@ public class JsonUtils {
     public static <T> T toObject(String content, Class<T> valueType) {
         try {
             return JSON_MAPPER.readValue(content, valueType);
-        } catch (Exception e) {
-            throw new JsonRuntimeException(e.getMessage(), e);
+        } catch (IOException e) {
+            throw new JsonRuntimeException(e.getMessage());
         }
     }
-
 
 
     public static Object toObject(String json, Type type) {
