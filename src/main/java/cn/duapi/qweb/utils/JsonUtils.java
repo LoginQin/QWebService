@@ -68,6 +68,9 @@ public class JsonUtils {
 
     public static Object toObject(String json, Type type) {
         try {
+            if (json == null) {
+                return null;
+            }
             return JSON_MAPPER.readValue(json, getJavaType(type));
         } catch (Exception e) {
             throw new JsonRuntimeException(e.getMessage(), e);
