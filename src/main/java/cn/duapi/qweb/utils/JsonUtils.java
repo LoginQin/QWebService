@@ -22,10 +22,6 @@ public class JsonUtils {
     public static ObjectWriter JSON_PRETTY_WRITER = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
     public static String toJson(Object obj) {
-        if (obj == null) {
-            return null;
-        }
-
         try {
             return JSON_MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
@@ -76,6 +72,7 @@ public class JsonUtils {
             throw new JsonRuntimeException(e.getMessage(), e);
         }
     }
+
 
     public static JavaType getJavaType(Type type) {
         JavaType resultType;
