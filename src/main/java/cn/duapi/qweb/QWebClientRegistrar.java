@@ -110,7 +110,7 @@ public class QWebClientRegistrar
                     AnnotatedBeanDefinition beanDefinition) {
                 // 这里覆盖, 否则扫描不到接口
                 boolean isCandidate = false;
-                if (beanDefinition.getMetadata().isIndependent()) {
+                if (beanDefinition.getMetadata().isInterface()) {
                     return true;
                 }
                 return isCandidate;
